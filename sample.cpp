@@ -23,6 +23,19 @@
 #include "glut.h"
 
 
+
+// Structure for storing planet information
+struct planet
+{
+	char* name;
+	char* file;
+	float                   scale;
+	int                     displayList;
+	char                    key;
+	GLuint					texObject;
+	GLuint					DLObject;
+};
+
 //	This is a sample OpenGL / GLUT program
 //
 //	The objective is to draw a 3d object and change the color of the axes
@@ -39,11 +52,11 @@
 //		6. The transformations to be reset
 //		7. The program to quit
 //
-//	Author:			Joe Graphics
+//	Author:			Dalton Shults
 
 // title of these windows:
 
-const char *WINDOWTITLE = "OpenGL / GLUT Sample -- Joe Graphics";
+const char *WINDOWTITLE = "OpenGL / GLUT Sample -- Dalton Shults";
 const char *GLUITITLE   = "User Interface Window";
 
 // what the glui package defines as true and false:
@@ -157,7 +170,7 @@ const GLfloat FOGDENSITY  = 0.30f;
 const GLfloat FOGSTART    = 1.5f;
 const GLfloat FOGEND      = 4.f;
 const float	  SUNSCALE = 109.f;
-const float	  PLANET_REDUCTION_SCALE = 0.1f;
+const float	  PLANET_REDUCTION_SCALE = 0.01f;
 
 // for lighting:
 
@@ -181,9 +194,9 @@ int		ActiveButton;			// current button that is down
 GLuint	AxesList;				// list to hold the axes
 int		AxesOn;					// != 0 means to draw the axes
 GLuint	BoxList;				// object display list
-GLuint	SphereList;
-GLuint	SunList;
-GLuint	SunTex;
+//GLuint	SphereList;
+//GLuint	SunList;
+//GLuint	SunTex;
 int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
 int		DepthBufferOn;			// != 0 means to use the z-buffer
@@ -196,6 +209,37 @@ int		ShadowsOn;				// != 0 means to turn shadows on
 float	Time;					// used for animation, this has a value between 0. and 1.
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
+
+// My variables
+
+// List Vars
+GLuint SunDL;
+GLuint LightSphereDL;
+GLuint SphereDL;
+GLuint MarsDL;
+GLuint EarthDL;
+GLuint VenusDL;
+GLuint JupiterDL;
+GLuint SaturnDL;
+GLuint UranusDL;
+GLuint NeptuneDL;
+
+// Tex Vars
+GLuint SunTex;
+GLuint MarsTex;
+GLuint EarthTex;
+GLuint VenusTex;
+GLuint JupiterTex;
+GLuint SaturnTex;
+GLuint UranusTex;
+GLuint NeptuneTex;
+
+// Mode variables
+int	   TextureMode;
+int    LightingMode;
+float  LightRadius;
+bool   Frozen;
+bool   ShowSphere;
 
 
 // function prototypes:
@@ -230,6 +274,22 @@ float			Dot(float [3], float [3]);
 float			Unit(float [3], float [3]);
 float			Unit(float [3]);
 
+
+
+// Initializing a struct of planets
+struct planet Planets[] =
+{
+		{ "Sun",		"8k_sun.bmp",                 15.0f,	0, '8', SunTex,			SunDL    },
+		{ "Venus",      "8k_venus_surface.bmp",		  0.95f,	0, 'v', VenusTex,		VenusDL	 },
+		{ "Earth",      "8k_earth_daymap.bmp",		  1.00f,	0, 'e', EarthTex,		EarthDL	 },
+		{ "Mars",       "8k_mars.bmp",				  0.53f,	0, 'm', MarsTex,		MarsDL	 },
+		{ "Jupiter",    "8k_jupiter.bmp",			 11.21f,	0, 'j', JupiterTex,		JupiterDL},
+		{ "Saturn",     "8k_saturn.bmp",			  9.45f,	0, 's', SaturnTex,		SaturnDL },
+		{ "Uranus",     "2k_uranus.bmp",			  4.01f,	0, 'u', UranusTex,		UranusDL },
+		{ "Neptune",    "2k_neptune.bmp",			  3.88f,	0, 'n', NeptuneTex,		NeptuneDL},
+};
+
+const int NUMPLANETS = sizeof(Planets) / sizeof(struct planet);
 
 // utility to create an array from 3 separate values:
 
@@ -446,20 +506,45 @@ Display( )
 	}
 
 	// since we are using glScalef( ), be sure the normals get unitized:
+	SetAmbientLight(1.0f, .0f, .0f, 0.01f);
+
+
+
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glCallList(SunList);
+	glCallList(Planets[0].DLObject);
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 	glEnable( GL_NORMALIZE );
+	
+	float F = 2;
+	float theta = 45.f * (sin(F * (2.f * F_PI * Time)));
+	float x = (float)25.f * (float)cos(2 * F_PI * Time);
+	float z = (float)25.f * (float)sin(2 * F_PI * Time);
+
+	float SpinAngle = 365 * 360 * Time;
+
+
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glPushMatrix();
+	glTranslatef(x, 0.f, z);
+	glRotatef(SpinAngle, 0.f, 1.f, 0.f);
+	glCallList(Planets[2].DLObject);
+	glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_NORMALIZE);
 
 
 	// draw the box object by calling up its display list:
-	SetAmbientLight(1.0f, .0f, .0f, 0.01f);
+	
 
-	glCallList( SunList );
+	//glCallList( SunDL );
 
 #ifdef DEMO_Z_FIGHTING
 	if( DepthFightingOn != 0 )
@@ -817,22 +902,48 @@ InitGraphics( )
 #endif
 
 	// all other setups go here, such as GLSLProgram and KeyTime setups:
-	int sunWidth, sunHeight;
-	char* sunFile = (char*)"8k_sun.bmp";
-	unsigned char* sunTexture = BmpToTexture(sunFile, &sunWidth, &sunHeight);
-	if (sunTexture == NULL)
-		fprintf(stderr, "Cannot open texture '%s'\n", sunFile);
-	else
-		fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", sunFile, sunWidth, sunHeight);
+	//int sunWidth, sunHeight;
+	//char* sunFile = (char*)"8k_sun.bmp";
+	//unsigned char* sunTexture = BmpToTexture(sunFile, &sunWidth, &sunHeight);
+	//if (sunTexture == NULL)
+	//	fprintf(stderr, "Cannot open texture '%s'\n", sunFile);
+	//else
+	//	fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", sunFile, sunWidth, sunHeight);
 
-	glGenTextures(1, &SunTex);
-	glBindTexture(GL_TEXTURE_2D, SunTex);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, sunWidth, sunHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, sunTexture);
+	//glGenTextures(1, &SunTex);
+	//glBindTexture(GL_TEXTURE_2D, SunTex);
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexImage2D(GL_TEXTURE_2D, 0, 3, sunWidth, sunHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, sunTexture);
+	// all other setups go here, such as GLSLProgram and KeyTime setups:
+	for (int i = 0; i < NUMPLANETS; i++)
+	{
+		int width, height;
+		char* file = (char*)Planets[i].file;
+
+		unsigned char* texture = BmpToTexture(file, &width, &height);
+
+		if (texture == NULL)
+		{
+			fprintf(stderr, "Cannot open texture '%s'\n", file);
+		}
+		else
+		{
+			fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", file, width, height);
+		}
+
+		glGenTextures(1, &Planets[i].texObject);
+		glBindTexture(GL_TEXTURE_2D, Planets[i].texObject);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
+	}
 }
 
 
@@ -847,80 +958,37 @@ InitLists( )
 	if (DebugOn != 0)
 		fprintf(stderr, "Starting InitLists.\n");
 
-	//float dx = BOXSIZE / 2.f;
-	//float dy = BOXSIZE / 2.f;
-	//float dz = BOXSIZE / 2.f;
-	//glutSetWindow( MainWindow );
-
-	//// create the object:
-
-	//BoxList = glGenLists( 1 );
-	//glNewList( BoxList, GL_COMPILE );
-
-	//	glBegin( GL_QUADS );
-
-	//		glColor3f( 1., 0., 0. );
-
-	//			glNormal3f( 1., 0., 0. );
-	//				glVertex3f(  dx, -dy,  dz );
-	//				glVertex3f(  dx, -dy, -dz );
-	//				glVertex3f(  dx,  dy, -dz );
-	//				glVertex3f(  dx,  dy,  dz );
-
-	//			glNormal3f(-1., 0., 0.);
-	//				glVertex3f( -dx, -dy,  dz);
-	//				glVertex3f( -dx,  dy,  dz );
-	//				glVertex3f( -dx,  dy, -dz );
-	//				glVertex3f( -dx, -dy, -dz );
-
-	//		glColor3f( 0., 1., 0. );
-
-	//			glNormal3f(0., 1., 0.);
-	//				glVertex3f( -dx,  dy,  dz );
-	//				glVertex3f(  dx,  dy,  dz );
-	//				glVertex3f(  dx,  dy, -dz );
-	//				glVertex3f( -dx,  dy, -dz );
-
-	//			glNormal3f(0., -1., 0.);
-	//				glVertex3f( -dx, -dy,  dz);
-	//				glVertex3f( -dx, -dy, -dz );
-	//				glVertex3f(  dx, -dy, -dz );
-	//				glVertex3f(  dx, -dy,  dz );
-
-	//		glColor3f(0., 0., 1.);
-
-	//			glNormal3f(0., 0., 1.);
-	//				glVertex3f(-dx, -dy, dz);
-	//				glVertex3f( dx, -dy, dz);
-	//				glVertex3f( dx,  dy, dz);
-	//				glVertex3f(-dx,  dy, dz);
-
-	//			glNormal3f(0., 0., -1.);
-	//				glVertex3f(-dx, -dy, -dz);
-	//				glVertex3f(-dx,  dy, -dz);
-	//				glVertex3f( dx,  dy, -dz);
-	//				glVertex3f( dx, -dy, -dz);
-
-	//	glEnd( );
-
-	//glEndList( );
-
-	SphereList = glGenLists(1);
-	glNewList(SphereList, GL_COMPILE);
+	SphereDL = glGenLists(1);
+	glNewList(SphereDL, GL_COMPILE);
 
 		OsuSphere(1., 500, 500);
 		
 	glEndList();
 
-	SunList = glGenLists(1);
-	glNewList(SunList, GL_COMPILE);
-		glBindTexture(GL_TEXTURE_2D, SunTex);
-		glPushMatrix();
-			float scale_factor = SUNSCALE * PLANET_REDUCTION_SCALE;
-			glScalef(scale_factor, scale_factor, scale_factor);
-			glCallList(SphereList);
-		glPopMatrix();
-	glEndList();
+	//Planets[0].DLObject = glGenLists(1);
+	//glNewList(Planets[0].DLObject, GL_COMPILE);
+	//	glBindTexture(GL_TEXTURE_2D, Planets[0].texObject);
+	//	glPushMatrix();
+	//		float scale_factor = SUNSCALE * PLANET_REDUCTION_SCALE;
+	//		glScalef(scale_factor, scale_factor, scale_factor);
+	//		glCallList(SphereDL);
+	//	glPopMatrix();
+	//glEndList();
+
+	for (int i = 0; i < NUMPLANETS; i++)
+	{
+		Planets[i].DLObject = glGenLists(1);
+		glNewList(Planets[i].DLObject, GL_COMPILE);
+			glBindTexture(GL_TEXTURE_2D, Planets[i].texObject);
+			fprintf(stderr, "\nOpening: '%s", Planets[i].file);
+			fprintf(stderr, " I: '%i'\n", i);
+				glPushMatrix();
+				float scale = Planets[i].scale; // *PLANET_REDUCTION_SCALE;
+					glScalef(scale, scale, scale);
+					glCallList(SphereDL);
+				glPopMatrix();
+		glEndList();
+	}
 
 	// create the axes:
 
