@@ -36,6 +36,7 @@ struct planet
 	float					AxialAngle;
 	GLuint					texObject;
 	GLuint					DLObject;
+	GLuint					CircleDLObject;
 };
 
 //	This is a sample OpenGL / GLUT program
@@ -172,9 +173,9 @@ const GLfloat FOGDENSITY  = 0.30f;
 const GLfloat FOGSTART    = 1.5f;
 const GLfloat FOGEND      = 4.f;
 const float	  SUNSCALE = 109.f;
-const float	  PLANET_REDUCTION_SCALE = 10.f;
-const float	  SUN_REDUCTION_SCALE = .2f;
-const float	  ORBIT_SCALE = 175.f;
+const float	  PLANET_REDUCTION_SCALE = 6.f;
+const float	  SUN_REDUCTION_SCALE = .7f;
+const float	  ORBIT_SCALE = 250.f;
 const float	  ORBIT_SPEED_RATIO = 0.0001;
 
 // for lighting:
@@ -272,6 +273,17 @@ float neptuneAngle = 0.f;
 float LastFrameTime = 0.0f;
 float TimeDelta = 0.0f;
 
+// Circle List vars
+GLuint	earthCircleDL;
+GLuint	mercuryCircleDL;
+GLuint	venusCircleDL;
+GLuint	marsCircleDL;
+GLuint	jupiterCircleDL;
+GLuint	saturnCircleDL;
+GLuint	uranusCircleDL;
+GLuint neptuneCircleDL;
+
+
 // function prototypes:
 
 void	Animate( );
@@ -317,15 +329,15 @@ float	Unit(float [3]);
 //};
 struct planet Entities[] =
 { //      name              file                       scale     au        angle    rot/orb     AxialAngle      texObject       DLObject
-		{ "Sun",		"8k_sun.bmp",				109.f,		0.f,		0.0,	13.51f,		7.25f,			SunTex,			SunDL    },
-		{ "Venus",      "8k_venus_surface.bmp",		0.95f,		0.72f,		0.0,	-0.93f,		2.64f,			VenusTex,		VenusDL	 },
-		{ "Earth",      "8k_earth_daymap.bmp",		1.00f,		1.f,		0.0,	365.25f,	23.44f,			EarthTex,		EarthDL	 },
-		{ "Mars",       "8k_mars.bmp",				0.53f,		1.52f,		0.0,	667.f,		25.19f,			MarsTex,		MarsDL	 },
-		{ "Jupiter",    "8k_jupiter.bmp",			11.21f,		5.20f,		0.0,	10563.f,	3.13f,			JupiterTex,		JupiterDL},
-		{ "Saturn",     "8k_saturn.bmp",			9.45f,		9.58f,		0.0,	23909.f,	26.73f,			SaturnTex,		SaturnDL },
-		{ "Uranus",     "2k_uranus.bmp",			4.01f,		19.22f,		0.0,	42621.f,	82.23f,			UranusTex,		UranusDL },
-		{ "Neptune",    "2k_neptune.bmp",			3.88f,		30.05f,		0.0,	89824.f,	28.32f,			NeptuneTex,		NeptuneDL},
-		{ "Mercury",	"8k_mercury.bmp",			0.387f,		0.39f,		0.0,	1.50f,		0.03f,			MercuryTex,		MercuryDL}
+		{ "Sun",		"8k_sun.bmp",				109.f,		0.f,		0.0,	13.51f,		7.25f,			SunTex,			SunDL,		NULL},
+		{ "Venus",      "8k_venus_surface.bmp",		0.95f,		0.72f,		0.0,	-0.93f,		2.64f,			VenusTex,		VenusDL,	venusCircleDL	},
+		{ "Earth",      "8k_earth_daymap.bmp",		1.00f,		1.f,		0.0,	365.25f,	23.44f,			EarthTex,		EarthDL,	earthCircleDL	},
+		{ "Mars",       "8k_mars.bmp",				0.53f,		1.52f,		0.0,	667.f,		25.19f,			MarsTex,		MarsDL,		marsCircleDL	},
+		{ "Jupiter",    "8k_jupiter.bmp",			11.21f,		5.20f,		0.0,	10563.f,	3.13f,			JupiterTex,		JupiterDL,	jupiterCircleDL	},
+		{ "Saturn",     "8k_saturn.bmp",			9.45f,		9.58f,		0.0,	23909.f,	26.73f,			SaturnTex,		SaturnDL,	saturnCircleDL	},
+		{ "Uranus",     "2k_uranus.bmp",			4.01f,		19.22f,		0.0,	42621.f,	82.23f,			UranusTex,		UranusDL,	uranusCircleDL	},
+		{ "Neptune",    "2k_neptune.bmp",			3.88f,		30.05f,		0.0,	89824.f,	28.32f,			NeptuneTex,		NeptuneDL,	neptuneCircleDL	},
+		{ "Mercury",	"8k_mercury.bmp",			0.387f,		0.39f,		0.0,	1.50f,		0.03f,			MercuryTex,		MercuryDL,	mercuryCircleDL	}
 };
 
 const int NUMPLANETS = sizeof(Entities) / sizeof(struct planet);
@@ -527,9 +539,9 @@ Display( )
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity( );
 	if( NowProjection == ORTHO )
-		glOrtho( -2.f, 2.f,     -2.f, 2.f,     0.1f, 5000.f );
+		glOrtho( -2.f, 2.f,     -2.f, 2.f,     1.f, 10000.f );
 	else
-		gluPerspective( 70.f, 1.f,	0.1f, 5000.f );
+		gluPerspective( 70.f, 1.f,	1.f, 10000.f );
 
 	// place the objects into the scene:
 
@@ -578,18 +590,19 @@ Display( )
 	}
 
 	// since we are using glScalef( ), be sure the normals get unitized:
-	SetAmbientLight(1.0f, .0f, .0f, 0.01f);
+	SetAmbientLight(.1f, .1f, .1f, 0.01f);
 
 
 
 	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glCallList(Entities[0].DLObject);
 	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
 	glEnable( GL_NORMALIZE );
+
+	glEnable(GL_LIGHTING);
+	SetPointLight(GL_LIGHT1, 0, 0, 0, 1.0, 1.0, 1.0);
+	glDisable(GL_LIGHTING);
 	
 
 	for (int i = 1; i < NUMPLANETS; i++)
@@ -602,7 +615,7 @@ Display( )
 
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_LIGHTING);
-		glEnable(GL_LIGHT0);
+		//glEnable(GL_LIGHT0);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 			glPushMatrix();
 				glTranslatef(x, 0.f, z);
@@ -613,6 +626,12 @@ Display( )
 	    glDisable(GL_TEXTURE_2D);
 		glDisable(GL_LIGHTING);
 		glEnable(GL_NORMALIZE);
+	}
+	for (int i = 1; i < NUMPLANETS; i++)
+	{
+		glPushMatrix();
+		glCallList(Entities[i].CircleDLObject);
+		glPopMatrix();
 	}
 	// draw the box object by calling up its display list:
 	
@@ -1071,7 +1090,27 @@ InitLists( )
 				glPopMatrix();
 		glEndList();
 	}
+	int slices = 720;
+	GLfloat LineWidth = 3;
 
+	for (int i = 1; i < NUMPLANETS; i++)
+	{
+		Entities[i].CircleDLObject = glGenLists(1);
+		glNewList(Entities[i].CircleDLObject, GL_COMPILE);
+		glPushMatrix();
+		glLineWidth(LineWidth);
+			glBegin(GL_LINE_LOOP);
+			for (int j = 0; j <= slices; j++)
+			{
+				glVertex3f(((Entities[i].AU * ORBIT_SCALE) * cos(j * F_2_PI / slices)),
+					0.f,
+					((Entities[i].AU * ORBIT_SCALE) * sin(j * F_2_PI / slices)));
+			}
+			glEnd();
+		glPopMatrix();
+		glEndList();
+	}
+	glLineWidth(1.0f);
 	// create the axes:
 
 	AxesList = glGenLists( 1 );
