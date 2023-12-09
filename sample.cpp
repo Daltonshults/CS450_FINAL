@@ -478,14 +478,14 @@ Animate( )
 	Time = (float)ms / (float)MS_PER_CYCLE;		// makes the value of Time between 0. and slightly less than 1.
 
 	// MY CODE
-	earthAngle = fmod(Time / earthOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
-	mercuryAngle = fmod(Time / mercuryOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
-	venusAngle = fmod(Time / venusOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
-	marsAngle = fmod(Time / marsOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
-	jupiterAngle = fmod(Time / jupiterOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
-	saturnAngle = fmod(Time / saturnOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
-	uranusAngle = fmod(Time / uranusOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
-	neptuneAngle = fmod(Time / neptuneOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
+	earthAngle = fmod(Time / earthOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
+	mercuryAngle = fmod(Time / mercuryOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
+	venusAngle = fmod(Time / venusOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
+	marsAngle = fmod(Time / marsOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
+	jupiterAngle = fmod(Time / jupiterOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
+	saturnAngle = fmod(Time / saturnOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
+	uranusAngle = fmod(Time / uranusOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
+	neptuneAngle = fmod(Time / neptuneOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
 
 	Entities[1].Angle = venusAngle;
 	Entities[2].Angle = earthAngle;
@@ -559,7 +559,7 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 	if (!FollowEarth)
-		gluLookAt( 30.f, 1500.f, 4500.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
+		gluLookAt( 30.f, 1500.f, 5000.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
 	else
 	{
 		float earth_x = ((Entities[2].AU * ORBIT_SCALE) + SunDiameter) * cos(Entities[2].Angle * (F_PI * 180.f));
