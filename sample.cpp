@@ -27,11 +27,11 @@
 // Structure for storing planet information
 struct planet
 {
-	char* name;
-	char* file;
-	float                   scale;
-	int                     displayList;
-	char                    key;
+	char*					name;
+	char*					file;
+	float                   scale; // Size scale
+	float                   AU;
+	float					RotationsPerOrbit;
 	GLuint					texObject;
 	GLuint					DLObject;
 };
@@ -171,6 +171,7 @@ const GLfloat FOGSTART    = 1.5f;
 const GLfloat FOGEND      = 4.f;
 const float	  SUNSCALE = 109.f;
 const float	  PLANET_REDUCTION_SCALE = 0.01f;
+const int ORBIT_SCALE = 25;
 
 // for lighting:
 
@@ -223,6 +224,7 @@ GLuint JupiterDL;
 GLuint SaturnDL;
 GLuint UranusDL;
 GLuint NeptuneDL;
+GLuint MercuryDL;
 
 // Tex Vars
 GLuint SunTex;
@@ -233,6 +235,7 @@ GLuint JupiterTex;
 GLuint SaturnTex;
 GLuint UranusTex;
 GLuint NeptuneTex;
+GLuint MercuryTex;
 
 // Mode variables
 int	   TextureMode;
@@ -241,6 +244,29 @@ float  LightRadius;
 bool   Frozen;
 bool   ShowSphere;
 
+// Orbit periods
+float mercuryOP = 0.244;
+float venusOP = 0.611;
+float earthOP = 1.;
+float marsOP = 1.874;
+float jupiterOP = 11.858;
+float saturnOP = 29.652;
+float uranusOP = 84.262;
+float neptuneOP = 164.728;
+
+// Rotation Angles
+float mercuryAngle = 0.f;
+float venusAngle = 0.f;
+float earthAngle = 0.f;
+float marsAngle = 0.f;
+float jupiterAngle = 0.f;
+float saturnAngle = 0.f;
+float uranusAngle = 0.f;
+float neptuneAngle = 0.f;
+
+// Frames
+float LastFrameTime = 0.0f;
+float TimeDelta = 0.0f;
 
 // function prototypes:
 
@@ -267,29 +293,37 @@ void	Reset( );
 void	Resize( int, int );
 void	Visibility( int );
 
-void			Axes( float );
-void			HsvRgb( float[3], float [3] );
-void			Cross(float[3], float[3], float[3]);
-float			Dot(float [3], float [3]);
-float			Unit(float [3], float [3]);
-float			Unit(float [3]);
+void	Axes( float );
+void	HsvRgb( float[3], float [3] );
+void	Cross(float[3], float[3], float[3]);
+float	Dot(float [3], float [3]);
+float	Unit(float [3], float [3]);
+float	Unit(float [3]);
 
-
-
-// Initializing a struct of planets
-struct planet Planets[] =
-{
-		{ "Sun",		"8k_sun.bmp",                 15.0f,	0, '8', SunTex,			SunDL    },
-		{ "Venus",      "8k_venus_surface.bmp",		  0.95f,	0, 'v', VenusTex,		VenusDL	 },
-		{ "Earth",      "8k_earth_daymap.bmp",		  1.00f,	0, 'e', EarthTex,		EarthDL	 },
-		{ "Mars",       "8k_mars.bmp",				  0.53f,	0, 'm', MarsTex,		MarsDL	 },
-		{ "Jupiter",    "8k_jupiter.bmp",			 11.21f,	0, 'j', JupiterTex,		JupiterDL},
-		{ "Saturn",     "8k_saturn.bmp",			  9.45f,	0, 's', SaturnTex,		SaturnDL },
-		{ "Uranus",     "2k_uranus.bmp",			  4.01f,	0, 'u', UranusTex,		UranusDL },
-		{ "Neptune",    "2k_neptune.bmp",			  3.88f,	0, 'n', NeptuneTex,		NeptuneDL},
+//struct planet
+//{
+//	char* name;
+//	char* file;
+//	float                   scale; // Size scale
+//	float                   AU;
+//	float					RotationsPerOrbit;
+//	GLuint					texObject;
+//	GLuint					DLObject;
+//};
+struct planet Entities[] =
+{ //      name              file                       scale        au     rot/orb      texObject       DLObject
+		{ "Sun",		"8k_sun.bmp",                 15.0f,	    0.f,   13.51f,		SunTex,			SunDL    },
+		{ "Venus",      "8k_venus_surface.bmp",		  0.95f,	  0.72f,    0.93f,		VenusTex,		VenusDL	 },
+		{ "Earth",      "8k_earth_daymap.bmp",		  1.00f,	    1.f,  365.25f,		EarthTex,		EarthDL	 },
+		{ "Mars",       "8k_mars.bmp",				  0.53f,	  1.52f,    667.f,		MarsTex,		MarsDL	 },
+		{ "Jupiter",    "8k_jupiter.bmp",			 11.21f,	  5.20f,  10563.f,		JupiterTex,		JupiterDL},
+		{ "Saturn",     "8k_saturn.bmp",			  9.45f,	  9.58f,  23909.f,		SaturnTex,		SaturnDL },
+		{ "Uranus",     "2k_uranus.bmp",			  4.01f,	 19.22f,  42621.f,		UranusTex,		UranusDL },
+		{ "Neptune",    "2k_neptune.bmp",			  3.88f,     30.05f,  89824.f,		NeptuneTex,		NeptuneDL},
+		{ "Mercury",	"8k_mercury.bmp",			 0.387f,      0.39f,    1.50f,		MercuryTex,		MercuryDL}
 };
 
-const int NUMPLANETS = sizeof(Planets) / sizeof(struct planet);
+const int NUMPLANETS = sizeof(Entities) / sizeof(struct planet);
 
 // utility to create an array from 3 separate values:
 
@@ -357,6 +391,8 @@ main( int argc, char *argv[ ] )
 
 	glutInit( &argc, argv );
 
+	LastFrameTime = (float)glutGet(GLUT_ELAPSED_TIME);
+
 	// setup all the graphics stuff:
 
 	InitGraphics( );
@@ -400,8 +436,19 @@ Animate( )
 	// put animation stuff in here -- change some global variables for Display( ) to find:
 
 	int ms = glutGet(GLUT_ELAPSED_TIME);
-	ms %= MS_PER_CYCLE;							// makes the value of ms between 0 and MS_PER_CYCLE-1
+	//ms %= MS_PER_CYCLE;							// makes the value of ms between 0 and MS_PER_CYCLE-1
 	Time = (float)ms / (float)MS_PER_CYCLE;		// makes the value of Time between 0. and slightly less than 1.
+	// MY CODE
+	//float CurrentTime = (float)glutGet(GLUT_ELAPSED_TIME);
+	//TimeDelta = (CurrentTime - LastFrameTime) / 1000.f;
+
+	//earthAngle = (360.0f / earthOP) * TimeDelta;
+	printf("Time: %f", Time);
+	earthAngle = fmod(Time / earthOP, 1.0f) * 360.0f;
+	printf("Earth Angle: %f\n", earthAngle);
+
+
+
 
 	// for example, if you wanted to spin an object in Display( ), you might call: glRotatef( 360.f*Time,   0., 1., 0. );
 
@@ -514,17 +561,22 @@ Display( )
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glCallList(Planets[0].DLObject);
+	glCallList(Entities[0].DLObject);
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 	glEnable( GL_NORMALIZE );
 	
-	float F = 2;
-	float theta = 45.f * (sin(F * (2.f * F_PI * Time)));
-	float x = (float)25.f * (float)cos(2 * F_PI * Time);
-	float z = (float)25.f * (float)sin(2 * F_PI * Time);
+	//float F = 2;
+	//float theta = 45.f * (sin(F * (2.f * F_PI * Time)));
+	//float x = ((float)Entities[2].AU * ORBIT_SCALE) * (float)cos(2 * F_PI * Time);
+	//float z = ((float)Entities[2].AU * ORBIT_SCALE) * (float)sin(2 * F_PI * Time);
+
+	float x = (Entities[2].AU * ORBIT_SCALE) * cos(earthAngle * (F_PI / 180.f));
+	float z = (Entities[2].AU * ORBIT_SCALE) * sin(earthAngle * (F_PI / 180.f));
 
 	float SpinAngle = 365 * 360 * Time;
+
+	//printf("Float x = %f\n", x);
 
 
 	glEnable(GL_TEXTURE_2D);
@@ -534,7 +586,7 @@ Display( )
 	glPushMatrix();
 	glTranslatef(x, 0.f, z);
 	glRotatef(SpinAngle, 0.f, 1.f, 0.f);
-	glCallList(Planets[2].DLObject);
+	glCallList(Entities[2].DLObject);
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
@@ -922,7 +974,7 @@ InitGraphics( )
 	for (int i = 0; i < NUMPLANETS; i++)
 	{
 		int width, height;
-		char* file = (char*)Planets[i].file;
+		char* file = (char*)Entities[i].file;
 
 		unsigned char* texture = BmpToTexture(file, &width, &height);
 
@@ -935,8 +987,8 @@ InitGraphics( )
 			fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", file, width, height);
 		}
 
-		glGenTextures(1, &Planets[i].texObject);
-		glBindTexture(GL_TEXTURE_2D, Planets[i].texObject);
+		glGenTextures(1, &Entities[i].texObject);
+		glBindTexture(GL_TEXTURE_2D, Entities[i].texObject);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -965,9 +1017,9 @@ InitLists( )
 		
 	glEndList();
 
-	//Planets[0].DLObject = glGenLists(1);
-	//glNewList(Planets[0].DLObject, GL_COMPILE);
-	//	glBindTexture(GL_TEXTURE_2D, Planets[0].texObject);
+	//Entities[0].DLObject = glGenLists(1);
+	//glNewList(Entities[0].DLObject, GL_COMPILE);
+	//	glBindTexture(GL_TEXTURE_2D, Entities[0].texObject);
 	//	glPushMatrix();
 	//		float scale_factor = SUNSCALE * PLANET_REDUCTION_SCALE;
 	//		glScalef(scale_factor, scale_factor, scale_factor);
@@ -977,13 +1029,13 @@ InitLists( )
 
 	for (int i = 0; i < NUMPLANETS; i++)
 	{
-		Planets[i].DLObject = glGenLists(1);
-		glNewList(Planets[i].DLObject, GL_COMPILE);
-			glBindTexture(GL_TEXTURE_2D, Planets[i].texObject);
-			fprintf(stderr, "\nOpening: '%s", Planets[i].file);
+		Entities[i].DLObject = glGenLists(1);
+		glNewList(Entities[i].DLObject, GL_COMPILE);
+			glBindTexture(GL_TEXTURE_2D, Entities[i].texObject);
+			fprintf(stderr, "\nOpening: '%s", Entities[i].file);
 			fprintf(stderr, " I: '%i'\n", i);
 				glPushMatrix();
-				float scale = Planets[i].scale; // *PLANET_REDUCTION_SCALE;
+				float scale = Entities[i].scale; // *PLANET_REDUCTION_SCALE;
 					glScalef(scale, scale, scale);
 					glCallList(SphereDL);
 				glPopMatrix();
