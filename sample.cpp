@@ -33,6 +33,7 @@ struct planet
 	float                   AU;
 	float					Angle;
 	float					RotationsPerOrbit;
+	float					AxialAngle;
 	GLuint					texObject;
 	GLuint					DLObject;
 };
@@ -171,9 +172,10 @@ const GLfloat FOGDENSITY  = 0.30f;
 const GLfloat FOGSTART    = 1.5f;
 const GLfloat FOGEND      = 4.f;
 const float	  SUNSCALE = 109.f;
-const float	  PLANET_REDUCTION_SCALE = .1f;
-const int	  ORBIT_SCALE = 1;
-const float	  ORBIT_SPEED_RATIO = 0.00001;
+const float	  PLANET_REDUCTION_SCALE = 10.f;
+const float	  SUN_REDUCTION_SCALE = .2f;
+const float	  ORBIT_SCALE = 175.f;
+const float	  ORBIT_SPEED_RATIO = 0.0001;
 
 // for lighting:
 
@@ -247,14 +249,14 @@ bool   Frozen;
 bool   ShowSphere;
 
 // Orbit periods
-float mercuryOP = 0.244;
-float venusOP = 0.611;
-float earthOP = 1.;
-float marsOP = 1.874;
-float jupiterOP = 11.858;
-float saturnOP = 29.652;
-float uranusOP = 84.262;
-float neptuneOP = 164.728;
+float mercuryOP; // = 0.244;
+float venusOP; // = 0.611;
+float earthOP; // = 1.;
+float marsOP; // = 1.874;
+float jupiterOP; // = 11.858;
+float saturnOP; // = 29.652;
+float uranusOP; // = 84.262;
+float neptuneOP; // = 164.728;
 
 // Rotation Angles
 float mercuryAngle = 0.f;
@@ -314,16 +316,16 @@ float	Unit(float [3]);
 //	GLuint					DLObject;
 //};
 struct planet Entities[] =
-{ //      name              file                       scale     au  angle    rot/orb      texObject       DLObject
-		{ "Sun",		"8k_sun.bmp",                 .1f,	0.f,	0.0,	13.51f,		SunTex,			SunDL    },
-		{ "Venus",      "8k_venus_surface.bmp",		  0.95f,	0.72f,	0.0,	0.93f,		VenusTex,		VenusDL	 },
-		{ "Earth",      "8k_earth_daymap.bmp",		  1.00f,	1.f,	0.0,	365.25f,	EarthTex,		EarthDL	 },
-		{ "Mars",       "8k_mars.bmp",				  0.53f,	1.52f,	0.0,	667.f,		MarsTex,		MarsDL	 },
-		{ "Jupiter",    "8k_jupiter.bmp",			 11.21f,	5.20f,  0.0,	10563.f,	JupiterTex,		JupiterDL},
-		{ "Saturn",     "8k_saturn.bmp",			  9.45f,	9.58f,  0.0,	23909.f,	SaturnTex,		SaturnDL },
-		{ "Uranus",     "2k_uranus.bmp",			  4.01f,	19.22f, 0.0,	42621.f,	UranusTex,		UranusDL },
-		{ "Neptune",    "2k_neptune.bmp",			  3.88f,    30.05f, 0.0,	89824.f,	NeptuneTex,		NeptuneDL},
-		{ "Mercury",	"8k_mercury.bmp",			 0.387f,    0.39f,  0.0,	1.50f,		MercuryTex,		MercuryDL}
+{ //      name              file                       scale     au        angle    rot/orb     AxialAngle      texObject       DLObject
+		{ "Sun",		"8k_sun.bmp",				109.f,		0.f,		0.0,	13.51f,		7.25f,			SunTex,			SunDL    },
+		{ "Venus",      "8k_venus_surface.bmp",		0.95f,		0.72f,		0.0,	-0.93f,		2.64f,			VenusTex,		VenusDL	 },
+		{ "Earth",      "8k_earth_daymap.bmp",		1.00f,		1.f,		0.0,	365.25f,	23.44f,			EarthTex,		EarthDL	 },
+		{ "Mars",       "8k_mars.bmp",				0.53f,		1.52f,		0.0,	667.f,		25.19f,			MarsTex,		MarsDL	 },
+		{ "Jupiter",    "8k_jupiter.bmp",			11.21f,		5.20f,		0.0,	10563.f,	3.13f,			JupiterTex,		JupiterDL},
+		{ "Saturn",     "8k_saturn.bmp",			9.45f,		9.58f,		0.0,	23909.f,	26.73f,			SaturnTex,		SaturnDL },
+		{ "Uranus",     "2k_uranus.bmp",			4.01f,		19.22f,		0.0,	42621.f,	82.23f,			UranusTex,		UranusDL },
+		{ "Neptune",    "2k_neptune.bmp",			3.88f,		30.05f,		0.0,	89824.f,	28.32f,			NeptuneTex,		NeptuneDL},
+		{ "Mercury",	"8k_mercury.bmp",			0.387f,		0.39f,		0.0,	1.50f,		0.03f,			MercuryTex,		MercuryDL}
 };
 
 const int NUMPLANETS = sizeof(Entities) / sizeof(struct planet);
@@ -383,6 +385,18 @@ MulArray3(float factor, float a, float b, float c )
 //#include "glslprogram.cpp"
 
 
+void
+initializeOP()
+{
+	venusOP = sqrt(pow(Entities[1].AU, 3));
+	earthOP = sqrt(pow(Entities[2].AU, 3));
+	marsOP = sqrt(pow(Entities[3].AU, 3));
+	jupiterOP = sqrt(pow(Entities[4].AU, 3));
+	saturnOP = sqrt(pow(Entities[5].AU, 3));
+	uranusOP = sqrt(pow(Entities[6].AU, 3));
+	neptuneOP = sqrt(pow(Entities[7].AU, 3));
+	mercuryOP = sqrt(pow(Entities[8].AU, 3));
+}
 // main program:
 
 int
@@ -441,12 +455,8 @@ Animate( )
 	int ms = glutGet(GLUT_ELAPSED_TIME);
 	//ms %= MS_PER_CYCLE;							// makes the value of ms between 0 and MS_PER_CYCLE-1
 	Time = (float)ms / (float)MS_PER_CYCLE;		// makes the value of Time between 0. and slightly less than 1.
-	// MY CODE
-	//float CurrentTime = (float)glutGet(GLUT_ELAPSED_TIME);
-	//TimeDelta = (CurrentTime - LastFrameTime) / 1000.f;
 
-	//earthAngle = (360.0f / earthOP) * TimeDelta;
-	//printf("Time: %f", Time);
+	// MY CODE
 	earthAngle = fmod(Time / earthOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
 	mercuryAngle = fmod(Time / mercuryOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
 	venusAngle = fmod(Time / venusOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
@@ -464,12 +474,6 @@ Animate( )
 	Entities[6].Angle = uranusAngle;
 	Entities[7].Angle = neptuneAngle;
 	Entities[8].Angle = mercuryAngle;
-
-
-	//printf("Earth Angle: %f\n", earthAngle);
-
-
-
 
 	// for example, if you wanted to spin an object in Display( ), you might call: glRotatef( 360.f*Time,   0., 1., 0. );
 
@@ -523,9 +527,9 @@ Display( )
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity( );
 	if( NowProjection == ORTHO )
-		glOrtho( -2.f, 2.f,     -2.f, 2.f,     0.1f, 1000.f );
+		glOrtho( -2.f, 2.f,     -2.f, 2.f,     0.1f, 5000.f );
 	else
-		gluPerspective( 70.f, 1.f,	0.1f, 1000.f );
+		gluPerspective( 70.f, 1.f,	0.1f, 5000.f );
 
 	// place the objects into the scene:
 
@@ -534,7 +538,7 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 
-	gluLookAt( 0.f, 0.f, 3.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
+	gluLookAt( 0.f, 25.f, 1000.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
 
 	// rotate the scene:
 
@@ -581,41 +585,16 @@ Display( )
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glCallList(Entities[0].DLObject);
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 	glEnable( GL_NORMALIZE );
 	
-	//float F = 2;
-	//float theta = 45.f * (sin(F * (2.f * F_PI * Time)));
-	//float x = ((float)Entities[2].AU * ORBIT_SCALE) * (float)cos(2 * F_PI * Time);
-	//float z = ((float)Entities[2].AU * ORBIT_SCALE) * (float)sin(2 * F_PI * Time);
-
-	//float x = (Entities[2].AU * ORBIT_SCALE) * cos(earthAngle * (F_PI / 180.f));
-	//float z = (Entities[2].AU * ORBIT_SCALE) * sin(earthAngle * (F_PI / 180.f));
-
-	//float SpinAngle = 365 * 360 * Time;
-
-	////printf("Float x = %f\n", x);
-
-
-	//glEnable(GL_TEXTURE_2D);
-	//glEnable(GL_LIGHTING);
-	//glEnable(GL_LIGHT0);
-	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	//glPushMatrix();
-	//glTranslatef(x, 0.f, z);
-	//glRotatef(SpinAngle, 0.f, 1.f, 0.f);
-	//glCallList(Entities[2].DLObject);
-	//glPopMatrix();
-	//glDisable(GL_TEXTURE_2D);
-	//glDisable(GL_LIGHTING);
-	//glEnable(GL_NORMALIZE);
 
 	for (int i = 1; i < NUMPLANETS; i++)
 	{	
-		printf("ANGLE: %f\n", Entities[i].Angle);
+		//printf("ANGLE: %f\n", Entities[i].Angle);
 		float x = (Entities[i].AU * ORBIT_SCALE) * cos(Entities[i].Angle * (F_PI * 180.f));
 		float z = (Entities[i].AU * ORBIT_SCALE) * sin(Entities[i].Angle * (F_PI * 180.f));
 
@@ -627,6 +606,7 @@ Display( )
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 			glPushMatrix();
 				glTranslatef(x, 0.f, z);
+				glRotatef(Entities[i].AxialAngle, 1.f, 0.f, 0.f);
 				glRotatef(SpinAngle, 0.f, 1.f, 0.f);
 				glCallList(Entities[i].DLObject);
 			glPopMatrix();
@@ -1076,9 +1056,18 @@ InitLists( )
 			fprintf(stderr, "\nOpening: '%s", Entities[i].file);
 			fprintf(stderr, " I: '%i'\n", i);
 				glPushMatrix();
-				float scale = Entities[i].scale * PLANET_REDUCTION_SCALE;
+				if (i == 0)
+				{
+					float scale = Entities[i].scale * SUN_REDUCTION_SCALE;
 					glScalef(scale, scale, scale);
 					glCallList(SphereDL);
+				}
+				else
+				{
+					float scale = Entities[i].scale * PLANET_REDUCTION_SCALE;
+					glScalef(scale, scale, scale);
+					glCallList(SphereDL);
+				}
 				glPopMatrix();
 		glEndList();
 	}
@@ -1243,6 +1232,7 @@ Reset( )
 	NowColor = YELLOW;
 	NowProjection = PERSP;
 	Xrot = Yrot = 0.;
+	initializeOP();
 }
 
 
