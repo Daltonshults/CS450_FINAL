@@ -167,16 +167,16 @@ const GLfloat Colors[ ][3] =
 
 // fog parameters:
 
-const GLfloat FOGCOLOR[4] = { .0f, .0f, .0f, 1.f };
-const GLenum  FOGMODE     = GL_LINEAR;
-const GLfloat FOGDENSITY  = 0.30f;
-const GLfloat FOGSTART    = 1.5f;
-const GLfloat FOGEND      = 4.f;
-const float	  SUNS_SIZE = 109.f;
-const float	  PLANET_REDUCTION_SCALE = 10.f;
-const float	  SUN_REDUCTION_SCALE = 1.f;
-const float	  ORBIT_SCALE = 75.f;
-const float	  ORBIT_SPEED_RATIO = 0.0001;
+const GLfloat FOGCOLOR[4]				= { .0f, .0f, .0f, 1.f };
+const GLenum  FOGMODE					= GL_LINEAR;
+const GLfloat FOGDENSITY				= 0.30f;
+const GLfloat FOGSTART					= 1.5f;
+const GLfloat FOGEND					= 4.f;
+const float	  SUNS_SIZE					= 109.f;
+const float	  PLANET_REDUCTION_SCALE	= 10.f;
+const float	  SUN_REDUCTION_SCALE		= 1.f;
+const float	  ORBIT_SCALE				= 75.f;
+const float	  ORBIT_SPEED_RATIO			= 0.0001;
 
 float SunDiameter = SUNS_SIZE * SUN_REDUCTION_SCALE;
 
@@ -234,6 +234,8 @@ GLuint UranusDL;
 GLuint NeptuneDL;
 GLuint MercuryDL;
 
+GLuint SolarDL;
+
 // Tex Vars
 GLuint SunTex;
 GLuint MarsTex;
@@ -244,6 +246,8 @@ GLuint SaturnTex;
 GLuint UranusTex;
 GLuint NeptuneTex;
 GLuint MercuryTex;
+
+GLuint SolarTex;
 
 // Mode variables
 int	   TextureMode;
@@ -542,7 +546,7 @@ Display( )
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity( );
 	if( NowProjection == ORTHO )
-		glOrtho( -2.f, 2.f,     -2.f, 2.f,     1.f, 10000.f );
+		glOrtho( -3000.f, 3000.f,     -3000.f, 3000.f,     1.f, 50000.f );
 	else
 		gluPerspective( 70.f, 1.f,	1.f, 10000.f );
 
@@ -593,8 +597,6 @@ Display( )
 	}
 
 	// since we are using glScalef( ), be sure the normals get unitized:
-	SetAmbientLight(.1f, .1f, .1f, 0.01f);
-
 
 
 	glEnable(GL_TEXTURE_2D);
@@ -607,6 +609,11 @@ Display( )
 	SetPointLight(GL_LIGHT1, 0, 0, 0, 1.0, 1.0, 1.0);
 	glDisable(GL_LIGHTING);
 	
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
+	glCallList(SolarDL);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
 
 	for (int i = 1; i < NUMPLANETS; i++)
 	{	
@@ -618,7 +625,6 @@ Display( )
 
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_LIGHTING);
-		//glEnable(GL_LIGHT0);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 			glPushMatrix();
 				glTranslatef(x, 0.f, z);
@@ -1042,6 +1048,29 @@ InitGraphics( )
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
 	}
+
+	int width, height;
+	char* file = (char*)"8k_stars_milky_way.bmp";
+
+	unsigned char* texture = BmpToTexture(file, &width, &height);
+
+	if (texture == NULL)
+	{
+		fprintf(stderr, "Cannot open texture '%s'\n", file);
+	}
+	else
+	{
+		fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", file, width, height);
+	}
+	glGenTextures(1, &SolarTex);
+	glBindTexture(GL_TEXTURE_2D, SolarTex);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
+
 }
 
 
@@ -1072,7 +1101,19 @@ InitLists( )
 	//		glCallList(SphereDL);
 	//	glPopMatrix();
 	//glEndList();
+	SolarDL = glGenLists(1);
+	glNewList(SolarDL, GL_COMPILE);
+		glBindTexture(GL_TEXTURE_2D, SolarTex);
+		glPushMatrix();
+			glScalef(3000.f, 3000.f, 3000.f);
+			glCallList(SphereDL);
+		glPopMatrix();
+	glEndList();
 
+
+
+
+		
 	for (int i = 0; i < NUMPLANETS; i++)
 	{
 		Entities[i].DLObject = glGenLists(1);
@@ -1084,12 +1125,14 @@ InitLists( )
 				if (i == 0)
 				{
 					float scale = Entities[i].scale * SUN_REDUCTION_SCALE;
+					SetMaterial(1.0, 1.0, 1.0, 50);
 					glScalef(scale, scale, scale);
 					glCallList(SphereDL);
 				}
 				else
 				{
 					float scale = Entities[i].scale * PLANET_REDUCTION_SCALE;
+					SetMaterial(1.0, 1.0, 1.0, 50);
 					glScalef(scale, scale, scale);
 					glCallList(SphereDL);
 				}
