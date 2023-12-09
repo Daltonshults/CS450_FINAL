@@ -176,7 +176,7 @@ const float		SUNS_SIZE				= 109.f;
 const float		PLANET_REDUCTION_SCALE	= 10.f;
 const float		SUN_REDUCTION_SCALE		= 2.f;
 const float		ORBIT_SCALE				= 100.f;
-const float		ORBIT_SPEED_RATIO		= 0.0001;
+const float		ORBIT_SPEED_RATIO		= 0.00005;
 const float		STARS_SCALE				= 8000.f;
 
 float SunDiameter = SUNS_SIZE * SUN_REDUCTION_SCALE;
@@ -559,7 +559,7 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 	if (!FollowEarth)
-		gluLookAt( 30.f, 1500.f, 5000.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
+		gluLookAt( 30.f, 1500.f, 5500.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
 	else
 	{
 		float earth_x = ((Entities[2].AU * ORBIT_SCALE) + SunDiameter) * cos(Entities[2].Angle * (F_PI * 180.f));
