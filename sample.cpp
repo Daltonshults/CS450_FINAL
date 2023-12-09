@@ -171,8 +171,9 @@ const GLfloat FOGDENSITY  = 0.30f;
 const GLfloat FOGSTART    = 1.5f;
 const GLfloat FOGEND      = 4.f;
 const float	  SUNSCALE = 109.f;
-const float	  PLANET_REDUCTION_SCALE = 0.01f;
-const int ORBIT_SCALE = 25;
+const float	  PLANET_REDUCTION_SCALE = .1f;
+const int	  ORBIT_SCALE = 1;
+const float	  ORBIT_SPEED_RATIO = 0.00001;
 
 // for lighting:
 
@@ -314,7 +315,7 @@ float	Unit(float [3]);
 //};
 struct planet Entities[] =
 { //      name              file                       scale     au  angle    rot/orb      texObject       DLObject
-		{ "Sun",		"8k_sun.bmp",                 15.0f,	0.f,	0.0,	13.51f,		SunTex,			SunDL    },
+		{ "Sun",		"8k_sun.bmp",                 .1f,	0.f,	0.0,	13.51f,		SunTex,			SunDL    },
 		{ "Venus",      "8k_venus_surface.bmp",		  0.95f,	0.72f,	0.0,	0.93f,		VenusTex,		VenusDL	 },
 		{ "Earth",      "8k_earth_daymap.bmp",		  1.00f,	1.f,	0.0,	365.25f,	EarthTex,		EarthDL	 },
 		{ "Mars",       "8k_mars.bmp",				  0.53f,	1.52f,	0.0,	667.f,		MarsTex,		MarsDL	 },
@@ -432,19 +433,6 @@ main( int argc, char *argv[ ] )
 //
 // do not call Display( ) from here -- let glutPostRedisplay( ) do it
 
-//struct planet Entities[] =
-//{ //      name              file                       scale  angle      au     rot/orb      texObject       DLObject
-//		{ "Sun",		"8k_sun.bmp",                 15.0f,	0.0,    0.f,	13.51f,		SunTex,			SunDL    },
-//		{ "Venus",      "8k_venus_surface.bmp",		  0.95f,	0.0,	0.72f,	0.93f,		VenusTex,		VenusDL	 },
-//		{ "Earth",      "8k_earth_daymap.bmp",		  1.00f,	0.0,    1.f,	365.25f,	EarthTex,		EarthDL	 },
-//		{ "Mars",       "8k_mars.bmp",				  0.53f,	0.0,	1.52f,	667.f,		MarsTex,		MarsDL	 },
-//		{ "Jupiter",    "8k_jupiter.bmp",			 11.21f,	0.0,	5.20f,  10563.f,	JupiterTex,		JupiterDL},
-//		{ "Saturn",     "8k_saturn.bmp",			  9.45f,	0.0,	9.58f,  23909.f,	SaturnTex,		SaturnDL },
-//		{ "Uranus",     "2k_uranus.bmp",			  4.01f,	0.0,	19.22f, 42621.f,	UranusTex,		UranusDL },
-//		{ "Neptune",    "2k_neptune.bmp",			  3.88f,    0.0,	30.05f, 89824.f,	NeptuneTex,		NeptuneDL},
-//		{ "Mercury",	"8k_mercury.bmp",			 0.387f,    0.0,	0.39f,  1.50f,		MercuryTex,		MercuryDL}
-//};
-
 void
 Animate( )
 {
@@ -459,14 +447,14 @@ Animate( )
 
 	//earthAngle = (360.0f / earthOP) * TimeDelta;
 	//printf("Time: %f", Time);
-	earthAngle = fmod(Time / earthOP, 1.0f) * 360.0f;
-	mercuryAngle = fmod(Time / mercuryOP, 1.0f) * 360.0f;
-	venusAngle = fmod(Time / venusOP, 1.0f) * 360.0f;
-	marsAngle = fmod(Time / marsOP, 1.0f) * 360.0f;
-	jupiterAngle = fmod(Time / jupiterOP, 1.0f) * 360.0f;
-	saturnAngle = fmod(Time / saturnOP, 1.0f) * 360.0f;
-	uranusAngle = fmod(Time / uranusOP, 1.0f) * 360.0f;
-	neptuneAngle = fmod(Time / neptuneOP, 1.0f) * 360.0f;
+	earthAngle = fmod(Time / earthOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
+	mercuryAngle = fmod(Time / mercuryOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
+	venusAngle = fmod(Time / venusOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
+	marsAngle = fmod(Time / marsOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
+	jupiterAngle = fmod(Time / jupiterOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
+	saturnAngle = fmod(Time / saturnOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
+	uranusAngle = fmod(Time / uranusOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
+	neptuneAngle = fmod(Time / neptuneOP * ORBIT_SPEED_RATIO, 1.0f) * 360.0f;
 
 	Entities[1].Angle = venusAngle;
 	Entities[2].Angle = earthAngle;
@@ -1066,7 +1054,7 @@ InitLists( )
 	SphereDL = glGenLists(1);
 	glNewList(SphereDL, GL_COMPILE);
 
-		OsuSphere(1., 500, 500);
+		OsuSphere(1., 100, 100);
 		
 	glEndList();
 
@@ -1088,7 +1076,7 @@ InitLists( )
 			fprintf(stderr, "\nOpening: '%s", Entities[i].file);
 			fprintf(stderr, " I: '%i'\n", i);
 				glPushMatrix();
-				float scale = Entities[i].scale; // *PLANET_REDUCTION_SCALE;
+				float scale = Entities[i].scale * PLANET_REDUCTION_SCALE;
 					glScalef(scale, scale, scale);
 					glCallList(SphereDL);
 				glPopMatrix();
