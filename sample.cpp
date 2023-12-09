@@ -96,7 +96,7 @@ const int SCROLL_WHEEL_DOWN = 4;
 
 // equivalent mouse movement when we click the scroll wheel:
 
-const float SCROLL_WHEEL_CLICK_FACTOR = 5.f;
+const float SCROLL_WHEEL_CLICK_FACTOR = 1.f;
 
 // active mouse buttons (or them together):
 
@@ -172,11 +172,13 @@ const GLenum  FOGMODE     = GL_LINEAR;
 const GLfloat FOGDENSITY  = 0.30f;
 const GLfloat FOGSTART    = 1.5f;
 const GLfloat FOGEND      = 4.f;
-const float	  SUNSCALE = 109.f;
-const float	  PLANET_REDUCTION_SCALE = 6.f;
-const float	  SUN_REDUCTION_SCALE = .7f;
-const float	  ORBIT_SCALE = 250.f;
+const float	  SUNS_SIZE = 109.f;
+const float	  PLANET_REDUCTION_SCALE = 10.f;
+const float	  SUN_REDUCTION_SCALE = 1.f;
+const float	  ORBIT_SCALE = 75.f;
 const float	  ORBIT_SPEED_RATIO = 0.0001;
+
+float SunDiameter = SUNS_SIZE * SUN_REDUCTION_SCALE;
 
 // for lighting:
 
@@ -209,7 +211,8 @@ int		DepthBufferOn;			// != 0 means to use the z-buffer
 int		DepthFightingOn;		// != 0 means to force the creation of z-fighting
 int		MainWindow;				// window id for main graphics window
 int		NowColor;				// index into Colors[ ]
-int		NowProjection;		// ORTHO or PERSP
+int		NowProjection;			// ORTHO or PERSP
+int		Lines;
 float	Scale;					// scaling factor
 int		ShadowsOn;				// != 0 means to turn shadows on
 float	Time;					// used for animation, this has a value between 0. and 1.
@@ -608,8 +611,8 @@ Display( )
 	for (int i = 1; i < NUMPLANETS; i++)
 	{	
 		//printf("ANGLE: %f\n", Entities[i].Angle);
-		float x = (Entities[i].AU * ORBIT_SCALE) * cos(Entities[i].Angle * (F_PI * 180.f));
-		float z = (Entities[i].AU * ORBIT_SCALE) * sin(Entities[i].Angle * (F_PI * 180.f));
+		float x = ((Entities[i].AU * ORBIT_SCALE) + SunDiameter) * cos(Entities[i].Angle * (F_PI * 180.f));
+		float z = ((Entities[i].AU * ORBIT_SCALE) + SunDiameter) * sin(Entities[i].Angle * (F_PI * 180.f));
 
 		float SpinAngle = Entities[i].RotationsPerOrbit * 360 * Time;
 
@@ -627,11 +630,14 @@ Display( )
 		glDisable(GL_LIGHTING);
 		glEnable(GL_NORMALIZE);
 	}
-	for (int i = 1; i < NUMPLANETS; i++)
+	if (Lines == 1)
 	{
-		glPushMatrix();
-		glCallList(Entities[i].CircleDLObject);
-		glPopMatrix();
+		for (int i = 1; i < NUMPLANETS; i++)
+		{
+			glPushMatrix();
+			glCallList(Entities[i].CircleDLObject);
+			glPopMatrix();
+		}
 	}
 	// draw the box object by calling up its display list:
 	
@@ -1091,7 +1097,7 @@ InitLists( )
 		glEndList();
 	}
 	int slices = 720;
-	GLfloat LineWidth = 3;
+	GLfloat LineWidth = 0.5;
 
 	for (int i = 1; i < NUMPLANETS; i++)
 	{
@@ -1102,9 +1108,9 @@ InitLists( )
 			glBegin(GL_LINE_LOOP);
 			for (int j = 0; j <= slices; j++)
 			{
-				glVertex3f(((Entities[i].AU * ORBIT_SCALE) * cos(j * F_2_PI / slices)),
+				glVertex3f((((Entities[i].AU * ORBIT_SCALE) + SunDiameter) * cos(j * F_2_PI / slices)),
 					0.f,
-					((Entities[i].AU * ORBIT_SCALE) * sin(j * F_2_PI / slices)));
+					(((Entities[i].AU * ORBIT_SCALE) + SunDiameter) * sin(j * F_2_PI / slices)));
 			}
 			glEnd();
 		glPopMatrix();
@@ -1147,6 +1153,14 @@ Keyboard( unsigned char c, int x, int y )
 		case ESCAPE:
 			DoMainMenu( QUIT );	// will not return here
 			break;				// happy compiler
+
+		case 'l':
+		case 'L':
+			if (Lines == 1)
+				Lines = 0;
+			else
+				Lines = 1;
+			break;
 
 		default:
 			fprintf( stderr, "Don't know what to do with keyboard hit: '%c' (0x%0x)\n", c, c );
@@ -1272,6 +1286,7 @@ Reset( )
 	NowProjection = PERSP;
 	Xrot = Yrot = 0.;
 	initializeOP();
+	Lines = 1;
 }
 
 
