@@ -167,16 +167,17 @@ const GLfloat Colors[ ][3] =
 
 // fog parameters:
 
-const GLfloat FOGCOLOR[4]				= { .0f, .0f, .0f, 1.f };
-const GLenum  FOGMODE					= GL_LINEAR;
-const GLfloat FOGDENSITY				= 0.30f;
-const GLfloat FOGSTART					= 1.5f;
-const GLfloat FOGEND					= 4.f;
-const float	  SUNS_SIZE					= 109.f;
-const float	  PLANET_REDUCTION_SCALE	= 10.f;
-const float	  SUN_REDUCTION_SCALE		= 1.f;
-const float	  ORBIT_SCALE				= 75.f;
-const float	  ORBIT_SPEED_RATIO			= 0.0001;
+const GLfloat	FOGCOLOR[4]				= { .0f, .0f, .0f, 1.f };
+const GLenum	FOGMODE					= GL_LINEAR;
+const GLfloat	FOGDENSITY				= 0.30f;
+const GLfloat	FOGSTART				= 1.5f;
+const GLfloat	FOGEND					= 4.f;
+const float		SUNS_SIZE				= 109.f;
+const float		PLANET_REDUCTION_SCALE	= 10.f;
+const float		SUN_REDUCTION_SCALE		= 2.f;
+const float		ORBIT_SCALE				= 100.f;
+const float		ORBIT_SPEED_RATIO		= 0.0001;
+const float		STARS_SCALE				= 8000.f;
 
 float SunDiameter = SUNS_SIZE * SUN_REDUCTION_SCALE;
 
@@ -250,11 +251,12 @@ GLuint MercuryTex;
 GLuint SolarTex;
 
 // Mode variables
-int	   TextureMode;
-int    LightingMode;
-float  LightRadius;
-bool   Frozen;
-bool   ShowSphere;
+int		TextureMode;
+int		LightingMode;
+float	LightRadius;
+bool	Frozen;
+bool	ShowSphere;
+bool	FollowEarth;
 
 // Orbit periods
 float mercuryOP; // = 0.244;
@@ -546,9 +548,9 @@ Display( )
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity( );
 	if( NowProjection == ORTHO )
-		glOrtho( -3000.f, 3000.f,     -3000.f, 3000.f,     1.f, 50000.f );
+		glOrtho( -3000.f, 3000.f,     -3000.f, 3000.f,     .1f, 100000.f );
 	else
-		gluPerspective( 70.f, 1.f,	1.f, 10000.f );
+		gluPerspective( 70.f, 1.f,	.1f, 100000.f );
 
 	// place the objects into the scene:
 
@@ -556,9 +558,14 @@ Display( )
 	glLoadIdentity( );
 
 	// set the eye position, look-at position, and up-vector:
-
-	gluLookAt( 0.f, 25.f, 1000.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
-
+	if (!FollowEarth)
+		gluLookAt( 30.f, 1500.f, 4500.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
+	else
+	{
+		float earth_x = ((Entities[2].AU * ORBIT_SCALE) + SunDiameter) * cos(Entities[2].Angle * (F_PI * 180.f));
+		float earth_z = ((Entities[2].AU * ORBIT_SCALE) + SunDiameter) * sin(Entities[2].Angle * (F_PI * 180.f));
+		gluLookAt(50.f, 1000.f, 1500.f, earth_x, 0.f, earth_z, 0.f, 1.f, 0.f );
+	}
 	// rotate the scene:
 
 	glRotatef( (GLfloat)Yrot, 0.f, 1.f, 0.f );
@@ -611,7 +618,9 @@ Display( )
 	
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
+	glDisable(GL_CULL_FACE);
 	glCallList(SolarDL);
+	glEnable(GL_CULL_FACE);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_2D);
 
@@ -1105,7 +1114,7 @@ InitLists( )
 	glNewList(SolarDL, GL_COMPILE);
 		glBindTexture(GL_TEXTURE_2D, SolarTex);
 		glPushMatrix();
-			glScalef(3000.f, 3000.f, 3000.f);
+			glScalef(STARS_SCALE, STARS_SCALE, STARS_SCALE);
 			glCallList(SphereDL);
 		glPopMatrix();
 	glEndList();
@@ -1125,14 +1134,14 @@ InitLists( )
 				if (i == 0)
 				{
 					float scale = Entities[i].scale * SUN_REDUCTION_SCALE;
-					SetMaterial(1.0, 1.0, 1.0, 50);
+					SetMaterial( .5f, .5f, .5f, 180);
 					glScalef(scale, scale, scale);
 					glCallList(SphereDL);
 				}
 				else
 				{
 					float scale = Entities[i].scale * PLANET_REDUCTION_SCALE;
-					SetMaterial(1.0, 1.0, 1.0, 50);
+					SetMaterial(.5f, .5f, .5f, 180);
 					glScalef(scale, scale, scale);
 					glCallList(SphereDL);
 				}
@@ -1203,6 +1212,10 @@ Keyboard( unsigned char c, int x, int y )
 				Lines = 0;
 			else
 				Lines = 1;
+			break;
+		case 'e':
+		case 'E':
+			FollowEarth = !FollowEarth;
 			break;
 
 		default:
@@ -1330,6 +1343,7 @@ Reset( )
 	Xrot = Yrot = 0.;
 	initializeOP();
 	Lines = 1;
+	FollowEarth = false;
 }
 
 
