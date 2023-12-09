@@ -31,6 +31,7 @@ struct planet
 	char*					file;
 	float                   scale; // Size scale
 	float                   AU;
+	float					Angle;
 	float					RotationsPerOrbit;
 	GLuint					texObject;
 	GLuint					DLObject;
@@ -306,21 +307,22 @@ float	Unit(float [3]);
 //	char* file;
 //	float                   scale; // Size scale
 //	float                   AU;
+//	float					Angle;
 //	float					RotationsPerOrbit;
 //	GLuint					texObject;
 //	GLuint					DLObject;
 //};
 struct planet Entities[] =
-{ //      name              file                       scale        au     rot/orb      texObject       DLObject
-		{ "Sun",		"8k_sun.bmp",                 15.0f,	    0.f,   13.51f,		SunTex,			SunDL    },
-		{ "Venus",      "8k_venus_surface.bmp",		  0.95f,	  0.72f,    0.93f,		VenusTex,		VenusDL	 },
-		{ "Earth",      "8k_earth_daymap.bmp",		  1.00f,	    1.f,  365.25f,		EarthTex,		EarthDL	 },
-		{ "Mars",       "8k_mars.bmp",				  0.53f,	  1.52f,    667.f,		MarsTex,		MarsDL	 },
-		{ "Jupiter",    "8k_jupiter.bmp",			 11.21f,	  5.20f,  10563.f,		JupiterTex,		JupiterDL},
-		{ "Saturn",     "8k_saturn.bmp",			  9.45f,	  9.58f,  23909.f,		SaturnTex,		SaturnDL },
-		{ "Uranus",     "2k_uranus.bmp",			  4.01f,	 19.22f,  42621.f,		UranusTex,		UranusDL },
-		{ "Neptune",    "2k_neptune.bmp",			  3.88f,     30.05f,  89824.f,		NeptuneTex,		NeptuneDL},
-		{ "Mercury",	"8k_mercury.bmp",			 0.387f,      0.39f,    1.50f,		MercuryTex,		MercuryDL}
+{ //      name              file                       scale     au  angle    rot/orb      texObject       DLObject
+		{ "Sun",		"8k_sun.bmp",                 15.0f,	0.f,	0.0,	13.51f,		SunTex,			SunDL    },
+		{ "Venus",      "8k_venus_surface.bmp",		  0.95f,	0.72f,	0.0,	0.93f,		VenusTex,		VenusDL	 },
+		{ "Earth",      "8k_earth_daymap.bmp",		  1.00f,	1.f,	0.0,	365.25f,	EarthTex,		EarthDL	 },
+		{ "Mars",       "8k_mars.bmp",				  0.53f,	1.52f,	0.0,	667.f,		MarsTex,		MarsDL	 },
+		{ "Jupiter",    "8k_jupiter.bmp",			 11.21f,	5.20f,  0.0,	10563.f,	JupiterTex,		JupiterDL},
+		{ "Saturn",     "8k_saturn.bmp",			  9.45f,	9.58f,  0.0,	23909.f,	SaturnTex,		SaturnDL },
+		{ "Uranus",     "2k_uranus.bmp",			  4.01f,	19.22f, 0.0,	42621.f,	UranusTex,		UranusDL },
+		{ "Neptune",    "2k_neptune.bmp",			  3.88f,    30.05f, 0.0,	89824.f,	NeptuneTex,		NeptuneDL},
+		{ "Mercury",	"8k_mercury.bmp",			 0.387f,    0.39f,  0.0,	1.50f,		MercuryTex,		MercuryDL}
 };
 
 const int NUMPLANETS = sizeof(Entities) / sizeof(struct planet);
@@ -430,6 +432,19 @@ main( int argc, char *argv[ ] )
 //
 // do not call Display( ) from here -- let glutPostRedisplay( ) do it
 
+//struct planet Entities[] =
+//{ //      name              file                       scale  angle      au     rot/orb      texObject       DLObject
+//		{ "Sun",		"8k_sun.bmp",                 15.0f,	0.0,    0.f,	13.51f,		SunTex,			SunDL    },
+//		{ "Venus",      "8k_venus_surface.bmp",		  0.95f,	0.0,	0.72f,	0.93f,		VenusTex,		VenusDL	 },
+//		{ "Earth",      "8k_earth_daymap.bmp",		  1.00f,	0.0,    1.f,	365.25f,	EarthTex,		EarthDL	 },
+//		{ "Mars",       "8k_mars.bmp",				  0.53f,	0.0,	1.52f,	667.f,		MarsTex,		MarsDL	 },
+//		{ "Jupiter",    "8k_jupiter.bmp",			 11.21f,	0.0,	5.20f,  10563.f,	JupiterTex,		JupiterDL},
+//		{ "Saturn",     "8k_saturn.bmp",			  9.45f,	0.0,	9.58f,  23909.f,	SaturnTex,		SaturnDL },
+//		{ "Uranus",     "2k_uranus.bmp",			  4.01f,	0.0,	19.22f, 42621.f,	UranusTex,		UranusDL },
+//		{ "Neptune",    "2k_neptune.bmp",			  3.88f,    0.0,	30.05f, 89824.f,	NeptuneTex,		NeptuneDL},
+//		{ "Mercury",	"8k_mercury.bmp",			 0.387f,    0.0,	0.39f,  1.50f,		MercuryTex,		MercuryDL}
+//};
+
 void
 Animate( )
 {
@@ -443,9 +458,27 @@ Animate( )
 	//TimeDelta = (CurrentTime - LastFrameTime) / 1000.f;
 
 	//earthAngle = (360.0f / earthOP) * TimeDelta;
-	printf("Time: %f", Time);
+	//printf("Time: %f", Time);
 	earthAngle = fmod(Time / earthOP, 1.0f) * 360.0f;
-	printf("Earth Angle: %f\n", earthAngle);
+	mercuryAngle = fmod(Time / mercuryOP, 1.0f) * 360.0f;
+	venusAngle = fmod(Time / venusOP, 1.0f) * 360.0f;
+	marsAngle = fmod(Time / marsOP, 1.0f) * 360.0f;
+	jupiterAngle = fmod(Time / jupiterOP, 1.0f) * 360.0f;
+	saturnAngle = fmod(Time / saturnOP, 1.0f) * 360.0f;
+	uranusAngle = fmod(Time / uranusOP, 1.0f) * 360.0f;
+	neptuneAngle = fmod(Time / neptuneOP, 1.0f) * 360.0f;
+
+	Entities[1].Angle = venusAngle;
+	Entities[2].Angle = earthAngle;
+	Entities[3].Angle = marsAngle;
+	Entities[4].Angle = jupiterAngle;
+	Entities[5].Angle = saturnAngle;
+	Entities[6].Angle = uranusAngle;
+	Entities[7].Angle = neptuneAngle;
+	Entities[8].Angle = mercuryAngle;
+
+
+	//printf("Earth Angle: %f\n", earthAngle);
 
 
 
@@ -571,28 +604,48 @@ Display( )
 	//float x = ((float)Entities[2].AU * ORBIT_SCALE) * (float)cos(2 * F_PI * Time);
 	//float z = ((float)Entities[2].AU * ORBIT_SCALE) * (float)sin(2 * F_PI * Time);
 
-	float x = (Entities[2].AU * ORBIT_SCALE) * cos(earthAngle * (F_PI / 180.f));
-	float z = (Entities[2].AU * ORBIT_SCALE) * sin(earthAngle * (F_PI / 180.f));
+	//float x = (Entities[2].AU * ORBIT_SCALE) * cos(earthAngle * (F_PI / 180.f));
+	//float z = (Entities[2].AU * ORBIT_SCALE) * sin(earthAngle * (F_PI / 180.f));
 
-	float SpinAngle = 365 * 360 * Time;
+	//float SpinAngle = 365 * 360 * Time;
 
-	//printf("Float x = %f\n", x);
-
-
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glPushMatrix();
-	glTranslatef(x, 0.f, z);
-	glRotatef(SpinAngle, 0.f, 1.f, 0.f);
-	glCallList(Entities[2].DLObject);
-	glPopMatrix();
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_NORMALIZE);
+	////printf("Float x = %f\n", x);
 
 
+	//glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHT0);
+	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	//glPushMatrix();
+	//glTranslatef(x, 0.f, z);
+	//glRotatef(SpinAngle, 0.f, 1.f, 0.f);
+	//glCallList(Entities[2].DLObject);
+	//glPopMatrix();
+	//glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_LIGHTING);
+	//glEnable(GL_NORMALIZE);
+
+	for (int i = 1; i < NUMPLANETS; i++)
+	{	
+		printf("ANGLE: %f\n", Entities[i].Angle);
+		float x = (Entities[i].AU * ORBIT_SCALE) * cos(Entities[i].Angle * (F_PI * 180.f));
+		float z = (Entities[i].AU * ORBIT_SCALE) * sin(Entities[i].Angle * (F_PI * 180.f));
+
+		float SpinAngle = Entities[i].RotationsPerOrbit * 360 * Time;
+
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			glPushMatrix();
+				glTranslatef(x, 0.f, z);
+				glRotatef(SpinAngle, 0.f, 1.f, 0.f);
+				glCallList(Entities[i].DLObject);
+			glPopMatrix();
+	    glDisable(GL_TEXTURE_2D);
+		glDisable(GL_LIGHTING);
+		glEnable(GL_NORMALIZE);
+	}
 	// draw the box object by calling up its display list:
 	
 
