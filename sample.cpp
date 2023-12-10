@@ -174,8 +174,8 @@ const GLfloat	FOGSTART				= 1.5f;
 const GLfloat	FOGEND					= 4.f;
 const float		PLANET_SIZE_SCALE		= 2.f;
 const float		SUN_SIZE_SCALE			= .15f;
-const float		ORBIT_SCALE				= 75.f;
-float			ORBIT_SPEED_RATIO		= 0.00004;
+const float		ORBIT_SCALE				= 100.f;
+float			ORBIT_SPEED_RATIO		= 0.00002;
 const float		STARS_SCALE				= 7500.f;
 
 //float SunDiameter = SUNS_SIZE * SUN_SIZE_SCALE;
@@ -605,7 +605,7 @@ Display( )
 	}
 	else
 	{
-		gluLookAt(250.f, 1000.f, 3500.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f);
+		gluLookAt(250.f, 1500.f, 5250.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f);
 	}
 	// rotate the scene:
 
