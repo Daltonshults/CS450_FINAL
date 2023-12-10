@@ -174,8 +174,8 @@ const GLfloat	FOGSTART				= 1.5f;
 const GLfloat	FOGEND					= 4.f;
 const float		PLANET_SIZE_SCALE		= 2.f;
 const float		SUN_SIZE_SCALE			= .15f;
-const float		ORBIT_SCALE				= 60.f;
-const float		ORBIT_SPEED_RATIO		= 0.00006;
+const float		ORBIT_SCALE				= 75.f;
+float			ORBIT_SPEED_RATIO		= 0.00004;
 const float		STARS_SCALE				= 7500.f;
 
 //float SunDiameter = SUNS_SIZE * SUN_SIZE_SCALE;
@@ -210,6 +210,8 @@ int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 
 // My variables
+
+GLenum LightType;
 
 // List Vars
 GLuint SunDL;
@@ -545,30 +547,6 @@ Display( )
 	glLoadIdentity( );
 
 	// set the eye position, look-at position, and up-vector:
-	//if (FollowEarth)
-	//{
-	//	float earth_x = (Entities[2].AU * ORBIT_SCALE) * cos(Entities[2].Angle * (F_PI * 180.f));
-	//	float earth_z = (Entities[2].AU * ORBIT_SCALE) * sin(Entities[2].Angle * (F_PI * 180.f));
-	//	Xrot, Yrot = 0;
-	//	gluLookAt(earth_x + 15, 15.f, 75.f, earth_x, 0.f, earth_z, 0.f, 1.f, 0.f );
-	//}
-	//else
-	//{
-	//	gluLookAt(250.f, 1000.f, 3500.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f);
-	//}
-
-	//struct planet Entities[] =
-	//{ //      name              file                       scale     au        angle    rot/orb     AxialAngle      texObject       DLObject
-	//		{ "Sun",		"8k_sun.bmp",				109.f,		0.f,		0.0,	13.51f,		7.25f,			SunTex,			SunDL,		NULL},
-	//		{ "Venus",      "8k_venus_surface.bmp",		0.95f,		0.72f,		0.0,	-0.93f,		2.64f,			VenusTex,		VenusDL,	venusCircleDL	},
-	//		{ "Earth",      "8k_earth_daymap.bmp",		1.00f,		1.f,		0.0,	365.25f,	23.44f,			EarthTex,		EarthDL,	earthCircleDL	},
-	//		{ "Mars",       "8k_mars.bmp",				0.53f,		1.52f,		0.0,	667.f,		25.19f,			MarsTex,		MarsDL,		marsCircleDL	},
-	//		{ "Jupiter",    "8k_jupiter.bmp",			11.21f,		5.20f,		0.0,	10563.f,	3.13f,			JupiterTex,		JupiterDL,	jupiterCircleDL	},
-	//		{ "Saturn",     "8k_saturn.bmp",			9.45f,		9.58f,		0.0,	23909.f,	26.73f,			SaturnTex,		SaturnDL,	saturnCircleDL	},
-	//		{ "Uranus",     "2k_uranus.bmp",			4.01f,		19.22f,		0.0,	42621.f,	82.23f,			UranusTex,		UranusDL,	uranusCircleDL	},
-	//		{ "Neptune",    "2k_neptune.bmp",			3.88f,		30.05f,		0.0,	89824.f,	28.32f,			NeptuneTex,		NeptuneDL,	neptuneCircleDL	},
-	//		{ "Mercury",	"8k_mercury.bmp",			0.387f,		0.39f,		0.0,	1.50f,		0.03f,			MercuryTex,		MercuryDL,	mercuryCircleDL	}
-	//};
 	if (FollowEarth)
 	{
 		float earth_x = (Entities[2].AU * ORBIT_SCALE) * cos(Entities[2].Angle * (F_PI * 180.f));
@@ -693,15 +671,15 @@ Display( )
 		float x = (Entities[i].AU * ORBIT_SCALE) * cos(Entities[i].Angle * (F_PI * 180.f));
 		float z = (Entities[i].AU * ORBIT_SCALE) * sin(Entities[i].Angle * (F_PI * 180.f));
 
-		float SpinAngle = Entities[i].RotationsPerOrbit * 360 * Time;
+		float Spin = Entities[i].RotationsPerOrbit * 360 * Entities[i].Angle * (180.f / F_PI);
 
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_LIGHTING);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, LightType);
 			glPushMatrix();
 				glTranslatef(x, 0.f, z);
 				glRotatef(Entities[i].AxialAngle, 1.f, 0.f, 0.f);
-				glRotatef(SpinAngle, 0.f, 1.f, 0.f);
+				glRotatef(Spin, 0.f, 1.f, 0.f);
 				glCallList(Entities[i].DLObject);
 			glPopMatrix();
 	    glDisable(GL_TEXTURE_2D);
@@ -713,6 +691,7 @@ Display( )
 		for (int i = 1; i < NUMPLANETS; i++)
 		{
 			glPushMatrix();
+			glColor3f(0.16f, 0.02f, 0.448f);
 			glCallList(Entities[i].CircleDLObject);
 			glPopMatrix();
 		}
@@ -1204,7 +1183,7 @@ InitLists( )
 				else
 				{
 					float scale = Entities[i].scale * PLANET_SIZE_SCALE;
-					SetMaterial(.5f, .5f, .5f, 180);
+					SetMaterialDarkBack(.5f, .5f, .5f, 180);
 					glScalef(scale, scale, scale);
 					glCallList(SphereDL);
 				}
@@ -1378,6 +1357,13 @@ Keyboard( unsigned char c, int x, int y )
 			FollowNeptune = !FollowNeptune;
 			break;
 
+		case '0':
+			if (LightType == GL_MODULATE)
+				LightType = GL_REPLACE;
+			else
+				LightType = GL_MODULATE;
+			break;
+
 		default:
 			fprintf( stderr, "Don't know what to do with keyboard hit: '%c' (0x%0x)\n", c, c );
 	}
@@ -1510,6 +1496,7 @@ Reset( )
 	FollowJupiter = false;
 	FollowSaturn = false;
 	FollowNeptune = false;
+	LightType = GL_MODULATE;
 }
 
 
