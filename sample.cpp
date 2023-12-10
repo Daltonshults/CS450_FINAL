@@ -595,7 +595,35 @@ Display( )
 		float j_x = (Entities[4].AU * ORBIT_SCALE) * cos(Entities[4].Angle * (F_PI * 180.f));
 		float j_z = (Entities[4].AU * ORBIT_SCALE) * sin(Entities[4].Angle * (F_PI * 180.f));
 		Xrot, Yrot = 0;
-		gluLookAt(j_x + 15, 15.f, j_z + 75.f, j_x, 0.f, j_z, 0.f, 1.f, 0.f);
+		gluLookAt(j_x + 75.f, 25.f, j_z + 100.f, j_x, 0.f, j_z, 0.f, 1.f, 0.f);
+	}
+	else if (FollowSaturn)
+	{
+		float s_x = (Entities[5].AU * ORBIT_SCALE) * cos(Entities[5].Angle * (F_PI * 180.f));
+		float s_z = (Entities[5].AU * ORBIT_SCALE) * sin(Entities[5].Angle * (F_PI * 180.f));
+		Xrot, Yrot = 0;
+		gluLookAt(s_x + 75.f, 25.f, s_z + 100.f, s_x, 0.f, s_z, 0.f, 1.f, 0.f);
+	}
+	else if (FollowUranus)
+	{
+		float u_x = (Entities[6].AU * ORBIT_SCALE) * cos(Entities[6].Angle * (F_PI * 180.f));
+		float u_z = (Entities[6].AU * ORBIT_SCALE) * sin(Entities[6].Angle * (F_PI * 180.f));
+		Xrot, Yrot = 0;
+		gluLookAt(u_x + 75.f, 25.f, u_z + 100.f, u_x, 0.f, u_z, 0.f, 1.f, 0.f);
+	}
+	else if (FollowNeptune)
+	{
+		float n_x = (Entities[7].AU * ORBIT_SCALE) * cos(Entities[7].Angle * (F_PI * 180.f));
+		float n_z = (Entities[7].AU * ORBIT_SCALE) * sin(Entities[7].Angle * (F_PI * 180.f));
+		Xrot, Yrot = 0;
+		gluLookAt(n_x + 75.f, 25.f, n_z + 100.f, n_x, 0.f, n_z, 0.f, 1.f, 0.f);
+	}
+	else if (FollowMercury)
+	{
+		float m_x = (Entities[8].AU * ORBIT_SCALE) * cos(Entities[8].Angle * (F_PI * 180.f));
+		float m_z = (Entities[8].AU * ORBIT_SCALE) * sin(Entities[8].Angle * (F_PI * 180.f));
+		Xrot, Yrot = 0;
+		gluLookAt(m_x + 7.5f, 25.f, m_z + 15.f, m_x, 0.f, m_z, 0.f, 1.f, 0.f);
 	}
 	else
 	{
