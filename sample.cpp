@@ -247,6 +247,14 @@ bool	Frozen;
 bool	ShowSphere;
 bool	FollowEarth;
 
+bool FollowVenus;
+bool FollowMercury;
+bool FollowMars;
+bool FollowJupiter;
+bool FollowSaturn;
+bool FollowUranus;
+bool FollowNeptune;
+
 // Orbit periods
 float mercuryOP; // = 0.244;
 float venusOP; // = 0.611;
@@ -537,14 +545,54 @@ Display( )
 	glLoadIdentity( );
 
 	// set the eye position, look-at position, and up-vector:
-	if (!FollowEarth)
-		gluLookAt(250.f, 1000.f, 3500.f,		 0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
-	else
+	//if (FollowEarth)
+	//{
+	//	float earth_x = (Entities[2].AU * ORBIT_SCALE) * cos(Entities[2].Angle * (F_PI * 180.f));
+	//	float earth_z = (Entities[2].AU * ORBIT_SCALE) * sin(Entities[2].Angle * (F_PI * 180.f));
+	//	Xrot, Yrot = 0;
+	//	gluLookAt(earth_x + 15, 15.f, 75.f, earth_x, 0.f, earth_z, 0.f, 1.f, 0.f );
+	//}
+	//else
+	//{
+	//	gluLookAt(250.f, 1000.f, 3500.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f);
+	//}
+
+	//struct planet Entities[] =
+	//{ //      name              file                       scale     au        angle    rot/orb     AxialAngle      texObject       DLObject
+	//		{ "Sun",		"8k_sun.bmp",				109.f,		0.f,		0.0,	13.51f,		7.25f,			SunTex,			SunDL,		NULL},
+	//		{ "Venus",      "8k_venus_surface.bmp",		0.95f,		0.72f,		0.0,	-0.93f,		2.64f,			VenusTex,		VenusDL,	venusCircleDL	},
+	//		{ "Earth",      "8k_earth_daymap.bmp",		1.00f,		1.f,		0.0,	365.25f,	23.44f,			EarthTex,		EarthDL,	earthCircleDL	},
+	//		{ "Mars",       "8k_mars.bmp",				0.53f,		1.52f,		0.0,	667.f,		25.19f,			MarsTex,		MarsDL,		marsCircleDL	},
+	//		{ "Jupiter",    "8k_jupiter.bmp",			11.21f,		5.20f,		0.0,	10563.f,	3.13f,			JupiterTex,		JupiterDL,	jupiterCircleDL	},
+	//		{ "Saturn",     "8k_saturn.bmp",			9.45f,		9.58f,		0.0,	23909.f,	26.73f,			SaturnTex,		SaturnDL,	saturnCircleDL	},
+	//		{ "Uranus",     "2k_uranus.bmp",			4.01f,		19.22f,		0.0,	42621.f,	82.23f,			UranusTex,		UranusDL,	uranusCircleDL	},
+	//		{ "Neptune",    "2k_neptune.bmp",			3.88f,		30.05f,		0.0,	89824.f,	28.32f,			NeptuneTex,		NeptuneDL,	neptuneCircleDL	},
+	//		{ "Mercury",	"8k_mercury.bmp",			0.387f,		0.39f,		0.0,	1.50f,		0.03f,			MercuryTex,		MercuryDL,	mercuryCircleDL	}
+	//};
+	if (FollowEarth)
 	{
 		float earth_x = (Entities[2].AU * ORBIT_SCALE) * cos(Entities[2].Angle * (F_PI * 180.f));
 		float earth_z = (Entities[2].AU * ORBIT_SCALE) * sin(Entities[2].Angle * (F_PI * 180.f));
 		Xrot, Yrot = 0;
-		gluLookAt(earth_x + 15, 15.f, 75.f, earth_x, 0.f, earth_z, 0.f, 1.f, 0.f );
+		gluLookAt(earth_x + 15, 15.f, 75.f, earth_x, 0.f, earth_z, 0.f, 1.f, 0.f);
+	}
+	else if (FollowVenus)
+	{
+		float v_x = (Entities[1].AU * ORBIT_SCALE) * cos(Entities[1].Angle * (F_PI * 180.f));
+		float v_z = (Entities[1].AU * ORBIT_SCALE) * sin(Entities[1].Angle * (F_PI * 180.f));
+		Xrot, Yrot = 0;
+		gluLookAt(v_x + 15, 15.f, 75.f, v_x, 0.f, v_z, 0.f, 1.f, 0.f);
+	}
+	else if (FollowMars)
+	{
+		float m_x = (Entities[3].AU * ORBIT_SCALE) * cos(Entities[3].Angle * (F_PI * 180.f));
+		float m_z = (Entities[3].AU * ORBIT_SCALE) * sin(Entities[3].Angle * (F_PI * 180.f));
+		Xrot, Yrot = 0;
+		gluLookAt(m_x + 15, 15.f, 75.f, m_x, 0.f, m_z, 0.f, 1.f, 0.f);
+	}
+	else
+	{
+		gluLookAt(250.f, 1000.f, 3500.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f);
 	}
 	// rotate the scene:
 
@@ -1162,6 +1210,14 @@ InitLists( )
 
 // the keyboard callback:
 
+//bool FollowVenus;
+//bool FollowMercury;
+//bool FollowMars;
+//bool FollowJupiter;
+//bool FollowSaturn;
+//bool FollowUranus;
+//bool FollowNeptune;
+
 void
 Keyboard( unsigned char c, int x, int y )
 {
@@ -1196,6 +1252,95 @@ Keyboard( unsigned char c, int x, int y )
 		case 'e':
 		case 'E':
 			FollowEarth = !FollowEarth;
+			FollowVenus = false;
+			FollowMercury = false;
+			FollowMars = false;
+			FollowJupiter = false;
+			FollowSaturn = false;
+			FollowUranus = false;
+			FollowNeptune = false;
+			break;
+
+		case 'v':
+		case 'V':
+			FollowEarth = false;
+			FollowVenus = !FollowVenus;
+			FollowMercury = false;
+			FollowMars = false;
+			FollowJupiter = false;
+			FollowSaturn = false;
+			FollowUranus = false;
+			FollowNeptune = false;
+			break;
+		case 'm':
+		case 'M':
+			FollowEarth = false;
+			FollowVenus = false;
+			FollowMercury = !FollowMercury;
+			FollowMars = false;
+			FollowJupiter = false;
+			FollowSaturn = false;
+			FollowUranus = false;
+			FollowNeptune = false;
+			break;
+		case 'w':
+		case 'W':
+			FollowEarth = false;
+			FollowVenus = false;
+			FollowMercury = false;
+			FollowMars = !FollowMars;
+			FollowJupiter = false;
+			FollowSaturn = false;
+			FollowUranus = false;
+			FollowNeptune = false;
+			break;
+
+		case 'j':
+		case 'J':
+			FollowEarth = false;
+			FollowVenus = false;
+			FollowMercury = false;
+			FollowMars = false;
+			FollowJupiter = !FollowJupiter;
+			FollowSaturn = false;
+			FollowUranus = false;
+			FollowNeptune = false;
+			break;
+
+		case 's':
+		case 'S':
+			FollowEarth = false;
+			FollowVenus = false;
+			FollowMercury = false;
+			FollowMars = false;
+			FollowJupiter = false;
+			FollowSaturn = !FollowSaturn;
+			FollowUranus = false;
+			FollowNeptune = false;
+			break;
+
+		case 'u':
+		case 'U':
+			FollowEarth = false;
+			FollowVenus = false;
+			FollowMercury = false;
+			FollowMars = false;
+			FollowJupiter = false;
+			FollowSaturn = false;
+			FollowUranus = !FollowUranus;
+			FollowNeptune = false;
+			break;
+
+		case 'n':
+		case 'N':
+			FollowEarth = false;
+			FollowVenus = false;
+			FollowMercury = false;
+			FollowMars = false;
+			FollowJupiter = false;
+			FollowSaturn = false;
+			FollowUranus = false;
+			FollowNeptune = !FollowNeptune;
 			break;
 
 		default:
@@ -1324,6 +1469,12 @@ Reset( )
 	initializeOP();
 	Lines = 1;
 	FollowEarth = false;
+	FollowMercury = false;
+	FollowVenus = false;
+	FollowMars = false;
+	FollowJupiter = false;
+	FollowSaturn = false;
+	FollowNeptune = false;
 }
 
 
