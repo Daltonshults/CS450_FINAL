@@ -574,21 +574,28 @@ Display( )
 		float earth_x = (Entities[2].AU * ORBIT_SCALE) * cos(Entities[2].Angle * (F_PI * 180.f));
 		float earth_z = (Entities[2].AU * ORBIT_SCALE) * sin(Entities[2].Angle * (F_PI * 180.f));
 		Xrot, Yrot = 0;
-		gluLookAt(earth_x + 15, 15.f, 75.f, earth_x, 0.f, earth_z, 0.f, 1.f, 0.f);
+		gluLookAt(earth_x + 15, 15.f, earth_z + 15.f, earth_x, 0.f, earth_z, 0.f, 1.f, 0.f);
 	}
 	else if (FollowVenus)
 	{
 		float v_x = (Entities[1].AU * ORBIT_SCALE) * cos(Entities[1].Angle * (F_PI * 180.f));
 		float v_z = (Entities[1].AU * ORBIT_SCALE) * sin(Entities[1].Angle * (F_PI * 180.f));
 		Xrot, Yrot = 0;
-		gluLookAt(v_x + 15, 15.f, 75.f, v_x, 0.f, v_z, 0.f, 1.f, 0.f);
+		gluLookAt(v_x + 15, 15.f, v_z + 15.f, v_x, 0.f, v_z, 0.f, 1.f, 0.f);
 	}
 	else if (FollowMars)
 	{
 		float m_x = (Entities[3].AU * ORBIT_SCALE) * cos(Entities[3].Angle * (F_PI * 180.f));
 		float m_z = (Entities[3].AU * ORBIT_SCALE) * sin(Entities[3].Angle * (F_PI * 180.f));
 		Xrot, Yrot = 0;
-		gluLookAt(m_x + 15, 15.f, 75.f, m_x, 0.f, m_z, 0.f, 1.f, 0.f);
+		gluLookAt(m_x + 25, 15.f, m_z + 15.f, m_x, 0.f, m_z, 0.f, 1.f, 0.f);
+	}
+	else if (FollowJupiter)
+	{
+		float j_x = (Entities[4].AU * ORBIT_SCALE) * cos(Entities[4].Angle * (F_PI * 180.f));
+		float j_z = (Entities[4].AU * ORBIT_SCALE) * sin(Entities[4].Angle * (F_PI * 180.f));
+		Xrot, Yrot = 0;
+		gluLookAt(j_x + 15, 15.f, j_z + 75.f, j_x, 0.f, j_z, 0.f, 1.f, 0.f);
 	}
 	else
 	{
