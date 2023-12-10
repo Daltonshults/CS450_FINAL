@@ -175,7 +175,7 @@ const GLfloat	FOGEND					= 4.f;
 const float		PLANET_SIZE_SCALE		= 2.f;
 const float		SUN_SIZE_SCALE			= .15f;
 const float		ORBIT_SCALE				= 100.f;
-float			ORBIT_SPEED_RATIO		= 0.00002;
+float			ORBIT_SPEED_RATIO		= 1.f;     //0.00002;
 const float		STARS_SCALE				= 7500.f;
 
 //float SunDiameter = SUNS_SIZE * SUN_SIZE_SCALE;
@@ -467,14 +467,14 @@ Animate( )
 	Time = (float)ms / (float)MS_PER_CYCLE;		// makes the value of Time between 0. and slightly less than 1.
 
 	// MY CODE
-	earthAngle = fmod(Time / earthOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
-	mercuryAngle = fmod(Time / mercuryOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
-	venusAngle = fmod(Time / venusOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
-	marsAngle = fmod(Time / marsOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
-	jupiterAngle = fmod(Time / jupiterOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
-	saturnAngle = fmod(Time / saturnOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
-	uranusAngle = fmod(Time / uranusOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
-	neptuneAngle = fmod(Time / neptuneOP * ORBIT_SPEED_RATIO, 1.0f) * -360.0f;
+	earthAngle = fmod(Time / earthOP * ORBIT_SPEED_RATIO, 1.0f) * -F_2_PI;
+	mercuryAngle = fmod(Time / mercuryOP * ORBIT_SPEED_RATIO, 1.0f) * -F_2_PI;
+	venusAngle = fmod(Time / venusOP * ORBIT_SPEED_RATIO, 1.0f) * -F_2_PI;
+	marsAngle = fmod(Time / marsOP * ORBIT_SPEED_RATIO, 1.0f) * -F_2_PI;
+	jupiterAngle = fmod(Time / jupiterOP * ORBIT_SPEED_RATIO, 1.0f) * -F_2_PI;
+	saturnAngle = fmod(Time / saturnOP * ORBIT_SPEED_RATIO, 1.0f) * -F_2_PI;
+	uranusAngle = fmod(Time / uranusOP * ORBIT_SPEED_RATIO, 1.0f) * -F_2_PI;
+	neptuneAngle = fmod(Time / neptuneOP * ORBIT_SPEED_RATIO, 1.0f) * -F_2_PI;
 
 	Entities[1].Angle = venusAngle;
 	Entities[2].Angle = earthAngle;
@@ -549,57 +549,57 @@ Display( )
 	// set the eye position, look-at position, and up-vector:
 	if (FollowEarth)
 	{
-		float earth_x = (Entities[2].AU * ORBIT_SCALE) * cos(Entities[2].Angle * (F_PI * 180.f));
-		float earth_z = (Entities[2].AU * ORBIT_SCALE) * sin(Entities[2].Angle * (F_PI * 180.f));
+		float e_x = (Entities[2].AU * ORBIT_SCALE) * cos(Entities[2].Angle);
+		float e_z = (Entities[2].AU * ORBIT_SCALE) * sin(Entities[2].Angle);
 		Xrot, Yrot = 0;
-		gluLookAt(earth_x + 15, 15.f, earth_z + 15.f, earth_x, 0.f, earth_z, 0.f, 1.f, 0.f);
+		gluLookAt(e_x + 15, 15.f, e_z + 15.f, e_x, 0.f, e_z, 0.f, 1.f, 0.f);
 	}
 	else if (FollowVenus)
 	{
-		float v_x = (Entities[1].AU * ORBIT_SCALE) * cos(Entities[1].Angle * (F_PI * 180.f));
-		float v_z = (Entities[1].AU * ORBIT_SCALE) * sin(Entities[1].Angle * (F_PI * 180.f));
+		float v_x = (Entities[1].AU * ORBIT_SCALE) * cos(Entities[1].Angle);
+		float v_z = (Entities[1].AU * ORBIT_SCALE) * sin(Entities[1].Angle);
 		Xrot, Yrot = 0;
 		gluLookAt(v_x + 15, 15.f, v_z + 15.f, v_x, 0.f, v_z, 0.f, 1.f, 0.f);
 	}
 	else if (FollowMars)
 	{
-		float m_x = (Entities[3].AU * ORBIT_SCALE) * cos(Entities[3].Angle * (F_PI * 180.f));
-		float m_z = (Entities[3].AU * ORBIT_SCALE) * sin(Entities[3].Angle * (F_PI * 180.f));
+		float m_x = (Entities[3].AU * ORBIT_SCALE) * cos(Entities[3].Angle);
+		float m_z = (Entities[3].AU * ORBIT_SCALE) * sin(Entities[3].Angle);
 		Xrot, Yrot = 0;
 		gluLookAt(m_x + 25, 15.f, m_z + 15.f, m_x, 0.f, m_z, 0.f, 1.f, 0.f);
 	}
 	else if (FollowJupiter)
 	{
-		float j_x = (Entities[4].AU * ORBIT_SCALE) * cos(Entities[4].Angle * (F_PI * 180.f));
-		float j_z = (Entities[4].AU * ORBIT_SCALE) * sin(Entities[4].Angle * (F_PI * 180.f));
+		float j_x = (Entities[4].AU * ORBIT_SCALE) * cos(Entities[4].Angle);
+		float j_z = (Entities[4].AU * ORBIT_SCALE) * sin(Entities[4].Angle);
 		Xrot, Yrot = 0;
 		gluLookAt(j_x + 75.f, 25.f, j_z + 100.f, j_x, 0.f, j_z, 0.f, 1.f, 0.f);
 	}
 	else if (FollowSaturn)
 	{
-		float s_x = (Entities[5].AU * ORBIT_SCALE) * cos(Entities[5].Angle * (F_PI * 180.f));
-		float s_z = (Entities[5].AU * ORBIT_SCALE) * sin(Entities[5].Angle * (F_PI * 180.f));
+		float s_x = (Entities[5].AU * ORBIT_SCALE) * cos(Entities[5].Angle);
+		float s_z = (Entities[5].AU * ORBIT_SCALE) * sin(Entities[5].Angle);
 		Xrot, Yrot = 0;
 		gluLookAt(s_x + 75.f, 25.f, s_z + 100.f, s_x, 0.f, s_z, 0.f, 1.f, 0.f);
 	}
 	else if (FollowUranus)
 	{
-		float u_x = (Entities[6].AU * ORBIT_SCALE) * cos(Entities[6].Angle * (F_PI * 180.f));
-		float u_z = (Entities[6].AU * ORBIT_SCALE) * sin(Entities[6].Angle * (F_PI * 180.f));
+		float u_x = (Entities[6].AU * ORBIT_SCALE) * cos(Entities[6].Angle);
+		float u_z = (Entities[6].AU * ORBIT_SCALE) * sin(Entities[6].Angle);
 		Xrot, Yrot = 0;
 		gluLookAt(u_x + 75.f, 25.f, u_z + 100.f, u_x, 0.f, u_z, 0.f, 1.f, 0.f);
 	}
 	else if (FollowNeptune)
 	{
-		float n_x = (Entities[7].AU * ORBIT_SCALE) * cos(Entities[7].Angle * (F_PI * 180.f));
-		float n_z = (Entities[7].AU * ORBIT_SCALE) * sin(Entities[7].Angle * (F_PI * 180.f));
+		float n_x = (Entities[7].AU * ORBIT_SCALE) * cos(Entities[7].Angle);
+		float n_z = (Entities[7].AU * ORBIT_SCALE) * sin(Entities[7].Angle);
 		Xrot, Yrot = 0;
 		gluLookAt(n_x + 75.f, 25.f, n_z + 100.f, n_x, 0.f, n_z, 0.f, 1.f, 0.f);
 	}
 	else if (FollowMercury)
 	{
-		float m_x = (Entities[8].AU * ORBIT_SCALE) * cos(Entities[8].Angle * (F_PI * 180.f));
-		float m_z = (Entities[8].AU * ORBIT_SCALE) * sin(Entities[8].Angle * (F_PI * 180.f));
+		float m_x = (Entities[8].AU * ORBIT_SCALE) * cos(Entities[8].Angle);
+		float m_z = (Entities[8].AU * ORBIT_SCALE) * sin(Entities[8].Angle);
 		Xrot, Yrot = 0;
 		gluLookAt(m_x + 7.5f, 25.f, m_z + 15.f, m_x, 0.f, m_z, 0.f, 1.f, 0.f);
 	}
@@ -667,11 +667,11 @@ Display( )
 
 	for (int i = 1; i < NUMPLANETS; i++)
 	{	
-		//printf("ANGLE: %f\n", Entities[i].Angle);
-		float x = (Entities[i].AU * ORBIT_SCALE) * cos(Entities[i].Angle * (F_PI * 180.f));
-		float z = (Entities[i].AU * ORBIT_SCALE) * sin(Entities[i].Angle * (F_PI * 180.f));
 
-		float Spin = Entities[i].RotationsPerOrbit * 360 * Entities[i].Angle * (180.f / F_PI);
+		float x = (Entities[i].AU * ORBIT_SCALE) * cos(Entities[i].Angle);
+		float z = (Entities[i].AU * ORBIT_SCALE) * sin(Entities[i].Angle);
+
+		float Spin = -(Entities[i].RotationsPerOrbit * 360 * Entities[i].Angle * (180.f / F_PI));
 
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_LIGHTING);
