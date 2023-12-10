@@ -172,14 +172,13 @@ const GLenum	FOGMODE					= GL_LINEAR;
 const GLfloat	FOGDENSITY				= 0.30f;
 const GLfloat	FOGSTART				= 1.5f;
 const GLfloat	FOGEND					= 4.f;
-const float		SUNS_SIZE				= 109.f;
-const float		PLANET_REDUCTION_SCALE	= 10.f;
-const float		SUN_REDUCTION_SCALE		= 2.f;
-const float		ORBIT_SCALE				= 100.f;
+const float		PLANET_SIZE_SCALE		= 2.f;
+const float		SUN_SIZE_SCALE			= .15f;
+const float		ORBIT_SCALE				= 60.f;
 const float		ORBIT_SPEED_RATIO		= 0.00006;
-const float		STARS_SCALE				= 8000.f;
+const float		STARS_SCALE				= 7500.f;
 
-float SunDiameter = SUNS_SIZE * SUN_REDUCTION_SCALE;
+//float SunDiameter = SUNS_SIZE * SUN_SIZE_SCALE;
 
 // for lighting:
 
@@ -190,22 +189,12 @@ const float	WHITE[ ] = { 1.,1.,1.,1. };
 const int MS_PER_CYCLE = 10000;		// 10000 milliseconds = 10 seconds
 
 
-// what options should we compile-in?
-// in general, you don't need to worry about these
-// i compile these in to show class examples of things going wrong
-//#define DEMO_Z_FIGHTING
-//#define DEMO_DEPTH_BUFFER
-
-
 // non-constant global variables:
 
 int		ActiveButton;			// current button that is down
 GLuint	AxesList;				// list to hold the axes
 int		AxesOn;					// != 0 means to draw the axes
 GLuint	BoxList;				// object display list
-//GLuint	SphereList;
-//GLuint	SunList;
-//GLuint	SunTex;
 int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
 int		DepthBufferOn;			// != 0 means to use the z-buffer
@@ -325,17 +314,7 @@ float	Dot(float [3], float [3]);
 float	Unit(float [3], float [3]);
 float	Unit(float [3]);
 
-//struct planet
-//{
-//	char* name;
-//	char* file;
-//	float                   scale; // Size scale
-//	float                   AU;
-//	float					Angle;
-//	float					RotationsPerOrbit;
-//	GLuint					texObject;
-//	GLuint					DLObject;
-//};
+
 struct planet Entities[] =
 { //      name              file                       scale     au        angle    rot/orb     AxialAngle      texObject       DLObject
 		{ "Sun",		"8k_sun.bmp",				109.f,		0.f,		0.0,	13.51f,		7.25f,			SunTex,			SunDL,		NULL},
@@ -548,9 +527,9 @@ Display( )
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity( );
 	if( NowProjection == ORTHO )
-		glOrtho( -3000.f, 3000.f,     -3000.f, 3000.f,     .1f, 100000.f );
+		glOrtho( -3000.f, 3000.f,     -3000.f, 3000.f,     .1f, 1000000.f );
 	else
-		gluPerspective( 70.f, 1.f,	.1f, 100000.f );
+		gluPerspective( 70.f, 1.f,	.1f, 1000000.f );
 
 	// place the objects into the scene:
 
@@ -559,12 +538,13 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 	if (!FollowEarth)
-		gluLookAt( 30.f, 1500.f, 5500.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
+		gluLookAt(250.f, 1000.f, 3500.f,		 0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
 	else
 	{
-		float earth_x = ((Entities[2].AU * ORBIT_SCALE) + SunDiameter) * cos(Entities[2].Angle * (F_PI * 180.f));
-		float earth_z = ((Entities[2].AU * ORBIT_SCALE) + SunDiameter) * sin(Entities[2].Angle * (F_PI * 180.f));
-		gluLookAt(50.f, 1000.f, 1500.f, earth_x, 0.f, earth_z, 0.f, 1.f, 0.f );
+		float earth_x = (Entities[2].AU * ORBIT_SCALE) * cos(Entities[2].Angle * (F_PI * 180.f));
+		float earth_z = (Entities[2].AU * ORBIT_SCALE) * sin(Entities[2].Angle * (F_PI * 180.f));
+		Xrot, Yrot = 0;
+		gluLookAt(earth_x + 15, 15.f, 75.f, earth_x, 0.f, earth_z, 0.f, 1.f, 0.f );
 	}
 	// rotate the scene:
 
@@ -627,8 +607,8 @@ Display( )
 	for (int i = 1; i < NUMPLANETS; i++)
 	{	
 		//printf("ANGLE: %f\n", Entities[i].Angle);
-		float x = ((Entities[i].AU * ORBIT_SCALE) + SunDiameter) * cos(Entities[i].Angle * (F_PI * 180.f));
-		float z = ((Entities[i].AU * ORBIT_SCALE) + SunDiameter) * sin(Entities[i].Angle * (F_PI * 180.f));
+		float x = (Entities[i].AU * ORBIT_SCALE) * cos(Entities[i].Angle * (F_PI * 180.f));
+		float z = (Entities[i].AU * ORBIT_SCALE) * sin(Entities[i].Angle * (F_PI * 180.f));
 
 		float SpinAngle = Entities[i].RotationsPerOrbit * 360 * Time;
 
@@ -1105,7 +1085,7 @@ InitLists( )
 	//glNewList(Entities[0].DLObject, GL_COMPILE);
 	//	glBindTexture(GL_TEXTURE_2D, Entities[0].texObject);
 	//	glPushMatrix();
-	//		float scale_factor = SUNSCALE * PLANET_REDUCTION_SCALE;
+	//		float scale_factor = SUNSCALE * PLANET_SIZE_SCALE;
 	//		glScalef(scale_factor, scale_factor, scale_factor);
 	//		glCallList(SphereDL);
 	//	glPopMatrix();
@@ -1133,14 +1113,14 @@ InitLists( )
 				glPushMatrix();
 				if (i == 0)
 				{
-					float scale = Entities[i].scale * SUN_REDUCTION_SCALE;
+					float scale = Entities[i].scale * SUN_SIZE_SCALE;
 					SetMaterial( .5f, .5f, .5f, 180);
 					glScalef(scale, scale, scale);
 					glCallList(SphereDL);
 				}
 				else
 				{
-					float scale = Entities[i].scale * PLANET_REDUCTION_SCALE;
+					float scale = Entities[i].scale * PLANET_SIZE_SCALE;
 					SetMaterial(.5f, .5f, .5f, 180);
 					glScalef(scale, scale, scale);
 					glCallList(SphereDL);
@@ -1160,9 +1140,9 @@ InitLists( )
 			glBegin(GL_LINE_LOOP);
 			for (int j = 0; j <= slices; j++)
 			{
-				glVertex3f((((Entities[i].AU * ORBIT_SCALE) + SunDiameter) * cos(j * F_2_PI / slices)),
+				glVertex3f((((Entities[i].AU  * ORBIT_SCALE)) * cos(j * F_2_PI / slices)),
 					0.f,
-					(((Entities[i].AU * ORBIT_SCALE) + SunDiameter) * sin(j * F_2_PI / slices)));
+					(((Entities[i].AU ) * ORBIT_SCALE) * sin(j * F_2_PI / slices)));
 			}
 			glEnd();
 		glPopMatrix();
